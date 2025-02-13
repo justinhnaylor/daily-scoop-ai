@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import prisma from "../../../../../lib/prisma"
+import type { TrendingArticle } from "@/types"
+
+const DEFAULT_BANNER =
+  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
+const DEFAULT_THUMBNAIL =
+  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
 
 export async function GET() {
   const sevenDaysAgo = new Date()
@@ -20,10 +26,18 @@ export async function GET() {
       id: true,
       title: true,
       imageUrl: true,
+      thumbnailUrl: true,
+      useImage: true,
       views: true,
       keywords: true,
     },
   })
 
-  return NextResponse.json(articles)
+  const processedArticles = articles.map((article: TrendingArticle) => ({
+    ...article,
+    imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
+    thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
+  }))
+
+  return NextResponse.json(processedArticles)
 }
