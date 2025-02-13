@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server"
 import prisma from "../../../../lib/prisma"
+import type { TrendingArticle } from "@/types"
+
+const DEFAULT_BANNER =
+  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
+const DEFAULT_THUMBNAIL =
+  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -28,6 +34,12 @@ export async function GET(request: Request) {
     skip: (page - 1) * limit,
   })
 
+  const processedArticles = articles.map((article: TrendingArticle) => ({
+    ...article,
+    imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
+    thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
+  }))
+
   const total = await prisma.news_article.count({
     where: {
       published: true,
@@ -36,7 +48,7 @@ export async function GET(request: Request) {
   })
 
   return NextResponse.json({
-    articles,
+    articles: processedArticles,
     totalPages: Math.ceil(total / limit),
     currentPage: page,
   })
