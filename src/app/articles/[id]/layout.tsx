@@ -1,7 +1,14 @@
 import { Article } from "@/types"
 import Image from "next/image"
-import { EyeIcon } from "@heroicons/react/24/outline"
+import { EyeIcon, ClockIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
+import RelatedArticles from "@/components/RelatedArticles"
+
+function estimateReadingTime(text: string): number {
+  const wordsPerMinute = 200
+  const words = text.trim().split(/\s+/).length
+  return Math.ceil(words / wordsPerMinute)
+}
 
 export default function ArticleLayout({ article }: { article: Article }) {
   const breadcrumbJsonLd = {
@@ -47,7 +54,11 @@ export default function ArticleLayout({ article }: { article: Article }) {
         )}
         <span>{article.title}</span>
       </nav>
-      <article className="max-w-4xl mx-auto">
+      <article
+        className="max-w-4xl mx-auto"
+        itemScope
+        itemType="https://schema.org/Article"
+      >
         <div className="relative w-full h-[400px] mb-8">
           <Image
             src={article.imageUrl || ""}
@@ -72,10 +83,16 @@ export default function ArticleLayout({ article }: { article: Article }) {
               {article.views} views
             </div>
             <time>{new Date(article.createdAt).toLocaleDateString()}</time>
+            <div className="flex items-center">
+              <ClockIcon className="h-4 w-4 mr-1" />
+              {estimateReadingTime(article.body)} min read
+            </div>
           </div>
 
           <div className="prose prose-lg max-w-none">{article.body}</div>
         </div>
+
+        <RelatedArticles article={article} />
       </article>
     </>
   )
