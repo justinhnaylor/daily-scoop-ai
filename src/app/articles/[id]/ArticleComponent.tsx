@@ -7,6 +7,7 @@ import Link from "next/link"
 import RelatedArticles from "@/components/RelatedArticles"
 import { useEffect } from "react"
 import { useTrackView } from "@/hooks/useTrackView"
+import AudioPlayer from "@/components/AudioPlayer"
 
 function estimateReadingTime(text: string): number {
   const wordsPerMinute = 200
@@ -123,6 +124,8 @@ export default function ArticleComponent({
 
         <div className="px-4">
           <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
+
+          {article.audioUrl && <AudioPlayer audioUrl={article.audioUrl} />}
 
           <div className="flex items-center gap-6 text-sm text-foreground/60 mb-8">
             {article.category && (

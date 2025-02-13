@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const id = pathParts[pathParts.length - 2] // Get the ID before 'views'
 
     if (!id) {
+      console.error("Article ID not found in URL")
       return NextResponse.json(
         { error: "Article ID not found" },
         { status: 400 }
@@ -29,8 +30,7 @@ export async function POST(request: Request) {
     const ip = headersList.get("x-forwarded-for") || "unknown"
 
     // Check for existing view cookie for this article
-    const viewCookie = cookieStore.get(`article-view-${id}`)
-    if (viewCookie) {
+    if (cookieStore.get(`article-view-${id}`)) {
       return NextResponse.json(
         { error: "Already viewed", views: null },
         { status: 200 }
@@ -42,24 +42,24 @@ export async function POST(request: Request) {
       where: { id },
       select: { id: true },
     })
-
     if (!articleExists) {
+      console.error("Article not found:", id)
       return NextResponse.json({ error: "Article not found" }, { status: 404 })
     }
 
-    // Create identifiers for rate limiting
+    // Create rate‑limit identifiers
     const ipIdentifier = `ip-${ip}`
     const articleIdentifier = `article-${id}`
     const combinedIdentifier = `${ip}-${id}`
 
-    // Check rate limits
-    const allowed = rateLimit(
+    // Check rate limits; await if asynchronous
+    const allowed = await rateLimit(
       [ipIdentifier, articleIdentifier, combinedIdentifier],
       RATE_LIMIT,
       RATE_LIMIT_WINDOW
     )
-
     if (!allowed) {
+      console.error("Rate limit exceeded")
       return NextResponse.json(
         { error: "Rate limit exceeded" },
         { status: 429 }
@@ -67,19 +67,15 @@ export async function POST(request: Request) {
     }
 
     // Increment view count
-    const article = await prisma.news_article.update({
+    const updatedArticle = await prisma.news_article.update({
       where: { id },
       data: {
-        views: {
-          increment: 1,
-        },
+        views: { increment: 1 },
       },
     })
 
-    // Create response with cookie
-    const response = NextResponse.json({ views: article.views })
-
-    // Set cookie to track this view
+    // Create response and set cookie to track this view
+    const response = NextResponse.json({ views: updatedArticle.views })
     response.cookies.set({
       name: `article-view-${id}`,
       value: "true",
@@ -89,13 +85,13 @@ export async function POST(request: Request) {
 
     return response
   } catch (error) {
-    console.error("Error incrementing views:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to increment views",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    )
+    console.error("Error updating views:", error)
+    console.log("Error type:", typeof error)
+    console.log("Error details:", error)
+    const payload = { error: "Internal server error" }
+    return new NextResponse(JSON.stringify(payload), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    })
   }
 }
