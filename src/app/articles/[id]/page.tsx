@@ -9,6 +9,8 @@ import {
   dehydrate,
 } from "@tanstack/react-query"
 
+import type { Article } from "@/types"
+
 const DEFAULT_BANNER =
   "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
 const DEFAULT_THUMBNAIL =
@@ -51,6 +53,30 @@ async function getArticle(articleId: string | undefined) {
 
   if (!article || !article.published) return null
   return article
+}
+
+async function getRelatedArticles(article: Article) {
+  return prisma.news_article.findMany({
+    where: {
+      published: true,
+      id: { not: article.id },
+      OR: [
+        { categoryId: article.categoryId },
+        { keywords: { hasSome: article.keywords } },
+      ],
+    },
+    take: 3,
+    orderBy: {
+      views: "desc",
+    },
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -106,6 +132,8 @@ export default async function ArticlePage({ params }: Props) {
     author: article.author || null,
   }
 
+  const relatedArticles = await getRelatedArticles(processedArticle)
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -128,7 +156,7 @@ export default async function ArticlePage({ params }: Props) {
 
   await queryClient.prefetchQuery({
     queryKey: ["article", id],
-    queryFn: () => processedArticle,
+    queryFn: () => ({ article: processedArticle, relatedArticles }),
   })
 
   return (
@@ -138,7 +166,10 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <ArticleComponent article={processedArticle} />
+        <ArticleComponent
+          article={processedArticle}
+          relatedArticles={relatedArticles}
+        />
       </HydrationBoundary>
     </>
   )

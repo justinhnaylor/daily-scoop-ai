@@ -125,17 +125,17 @@ async function getRecentStories(categoryId: number | null = null) {
 }
 
 type Props = {
-  params: Promise<Record<string, never>>
   searchParams: Promise<{ category?: string }>
 }
 
 export default async function Home({ searchParams }: Props) {
-  const queryClient = new QueryClient()
-  const categoryId = (await searchParams).category
-    ? parseInt((await searchParams).category!)
-    : null
+  // Await the promise to get the search parameters
+  const { category } = await searchParams
+  const categoryId = category ? parseInt(category) : null
 
-  // Prefetch data
+  const queryClient = new QueryClient()
+
+  // Prefetch data for trending articles
   await queryClient.prefetchQuery({
     queryKey: ["trending-articles"],
     queryFn: () =>
@@ -144,6 +144,7 @@ export default async function Home({ searchParams }: Props) {
       ),
   })
 
+  // Prefetch articles for the given category on page 1
   await queryClient.prefetchQuery({
     queryKey: ["articles", categoryId, 1],
     queryFn: () =>
@@ -158,7 +159,7 @@ export default async function Home({ searchParams }: Props) {
 
   const [trendingStories, recentStories] = await Promise.all([
     getTrendingStories(),
-    getRecentStories(categoryId !== null ? categoryId : null),
+    getRecentStories(categoryId),
   ])
 
   console.log("Trending Stories:", trendingStories)

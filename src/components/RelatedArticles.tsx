@@ -1,5 +1,6 @@
+"use client"
+
 import { Article } from "@/types"
-import prisma from "../../lib/prisma"
 import Link from "next/link"
 import Image from "next/image"
 import { EyeIcon } from "@heroicons/react/24/outline"
@@ -7,44 +8,14 @@ import { EyeIcon } from "@heroicons/react/24/outline"
 const DEFAULT_THUMBNAIL =
   "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
 
-async function getRelatedArticles(currentArticle: Article) {
-  return prisma.news_article.findMany({
-    where: {
-      published: true,
-      id: { not: currentArticle.id },
-      OR: [
-        { categoryId: currentArticle.categoryId },
-        { keywords: { hasSome: currentArticle.keywords } },
-      ],
-    },
-    take: 3,
-    orderBy: {
-      views: "desc",
-    },
-    include: {
-      category: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  })
-}
-
-export default async function RelatedArticles({
-  article,
-}: {
-  article: Article
-}) {
-  const relatedArticles = await getRelatedArticles(article)
-
-  if (relatedArticles.length === 0) return null
+export default function RelatedArticles({ articles }: { articles: Article[] }) {
+  if (articles.length === 0) return null
 
   return (
     <section className="mt-12 border-t pt-8">
       <h2 className="text-2xl font-bold mb-6">Related Articles</h2>
       <div className="grid gap-6 md:grid-cols-3">
-        {relatedArticles.map((related: Article) => (
+        {articles.map((related: Article) => (
           <Link
             key={related.id}
             href={`/articles/${related.id}`}

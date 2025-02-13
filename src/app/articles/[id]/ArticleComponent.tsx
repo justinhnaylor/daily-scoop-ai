@@ -44,7 +44,13 @@ function formatArticleBody(body: string) {
     ))
 }
 
-export default function ArticleComponent({ article }: { article: Article }) {
+export default function ArticleComponent({
+  article,
+  relatedArticles,
+}: {
+  article: Article
+  relatedArticles: Article[]
+}) {
   const { mutate: trackView } = useTrackView()
 
   useEffect(() => {
@@ -140,7 +146,7 @@ export default function ArticleComponent({ article }: { article: Article }) {
           </div>
         </div>
 
-        <RelatedArticles article={article} />
+        <RelatedArticles articles={relatedArticles} />
       </article>
     </>
   )

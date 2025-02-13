@@ -15,7 +15,15 @@ export async function POST(request: Request) {
     const cookieStore = await cookies()
 
     // Get article ID from URL
-    const id = request.url.split("/").pop()
+    const pathParts = request.url.split("/")
+    const id = pathParts[pathParts.length - 2] // Get the ID before 'views'
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Article ID not found" },
+        { status: 400 }
+      )
+    }
 
     // Get IP address
     const ip = headersList.get("x-forwarded-for") || "unknown"
@@ -27,6 +35,16 @@ export async function POST(request: Request) {
         { error: "Already viewed", views: null },
         { status: 200 }
       )
+    }
+
+    // Check if article exists
+    const articleExists = await prisma.news_article.findUnique({
+      where: { id },
+      select: { id: true },
+    })
+
+    if (!articleExists) {
+      return NextResponse.json({ error: "Article not found" }, { status: 404 })
     }
 
     // Create identifiers for rate limiting
@@ -65,7 +83,7 @@ export async function POST(request: Request) {
     response.cookies.set({
       name: `article-view-${id}`,
       value: "true",
-      expires: Date.now() + VIEW_COOKIE_EXPIRY,
+      expires: new Date(Date.now() + VIEW_COOKIE_EXPIRY),
       path: "/",
     })
 
@@ -73,7 +91,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error incrementing views:", error)
     return NextResponse.json(
-      { error: "Failed to increment views" },
+      {
+        error: "Failed to increment views",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     )
   }

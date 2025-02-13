@@ -3,6 +3,7 @@
 import { useState, useEffect, TouchEvent, MouseEvent } from "react"
 import { EyeIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
+import Link from "next/link"
 
 interface TrendingStory {
   id: string
@@ -43,7 +44,7 @@ export default function TrendingCarousel({
     if (!isDragging) return
     setIsDragging(false)
 
-    const moveThreshold = 20 // percentage of screen width
+    const moveThreshold = 20
     const diff = currentTranslate + currentIndex * 100
 
     if (Math.abs(diff) > moveThreshold) {
@@ -88,7 +89,11 @@ export default function TrendingCarousel({
         onMouseLeave={handleDragEnd}
       >
         {stories.map((story) => (
-          <div key={story.id} className="min-w-full h-full relative">
+          <Link
+            key={story.id}
+            href={`/articles/${story.id}`}
+            className="min-w-full h-full relative"
+          >
             {story.imageUrl && (
               <Image
                 src={story.imageUrl}
@@ -106,7 +111,7 @@ export default function TrendingCarousel({
                 <span>{story.views} views</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
