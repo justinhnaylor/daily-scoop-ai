@@ -99,6 +99,7 @@ async function getRecentStories(categoryId: number | null = null) {
 
   const stories = await prisma.news_article.findMany({
     where: {
+      published: true,
       ...(categoryId ? { categoryId } : {}),
     },
     orderBy: {
@@ -123,8 +124,15 @@ async function getRecentStories(categoryId: number | null = null) {
   return processedStories
 }
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { category?: string }
+}) {
   const queryClient = new QueryClient()
+  const categoryId = searchParams.category
+    ? parseInt(searchParams.category)
+    : null
 
   // Prefetch data
   await queryClient.prefetchQuery({
@@ -137,7 +145,7 @@ export default async function Home() {
 
   const [trendingStories, recentStories, categories] = await Promise.all([
     getTrendingStories(),
-    getRecentStories(),
+    getRecentStories(categoryId),
     prisma.category.findMany(),
   ])
 
@@ -158,7 +166,10 @@ export default async function Home() {
         <section>
           <h2 className="text-2xl font-bold mb-6">Recent Stories</h2>
           <Suspense fallback={<div>Loading...</div>}>
-            <CategoryScroll categories={categories} selectedCategory={null} />
+            <CategoryScroll
+              categories={categories}
+              selectedCategory={categoryId}
+            />
             <StoryList stories={recentStories} />
           </Suspense>
         </section>
