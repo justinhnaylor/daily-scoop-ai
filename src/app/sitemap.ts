@@ -1,6 +1,10 @@
 import prisma from "../../lib/prisma"
 import { MetadataRoute } from "next"
-import type { NewsArticle } from "@prisma/client/wasm"
+
+type ArticleResult = {
+  id: string
+  updatedAt: Date
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const articles = await prisma.news_article.findMany({
@@ -11,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   })
 
-  const articleUrls = articles.map((article: NewsArticle) => ({
+  const articleUrls = articles.map((article: ArticleResult) => ({
     url: `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.id}`,
     lastModified: article.updatedAt,
     changeFrequency: "daily" as const,

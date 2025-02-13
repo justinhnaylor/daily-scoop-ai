@@ -72,7 +72,17 @@ async function getTrendingStories() {
     },
   })
 
-  const processedStories = stories.map((story: Article) => ({
+  type StoryResult = {
+    id: string
+    title: string
+    imageUrl: string | null
+    thumbnailUrl: string | null
+    useImage: boolean
+    views: number
+    published: boolean
+  }
+
+  const processedStories = stories.map((story: StoryResult) => ({
     ...story,
     imageUrl: story.useImage ? story.imageUrl : DEFAULT_BANNER,
     thumbnailUrl: story.useImage ? story.thumbnailUrl : DEFAULT_THUMBNAIL,

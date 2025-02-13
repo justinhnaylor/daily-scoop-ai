@@ -2,7 +2,7 @@ import prisma from "../../../../lib/prisma"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import ArticleComponent from "./ArticleComponent"
-import type { Article } from "@/types"
+
 import {
   HydrationBoundary,
   QueryClient,
@@ -27,7 +27,7 @@ export async function generateStaticParams() {
     select: { id: true },
   })
 
-  return articles.map((article: Article) => ({
+  return articles.map((article: { id: string }) => ({
     id: article.id,
   }))
 }

@@ -9,6 +9,7 @@ export interface TrendingArticle {
 }
 
 export interface Article extends TrendingArticle {
+  id: string
   body: string
   audioUrl: string | null
   authorId: string
