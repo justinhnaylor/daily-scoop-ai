@@ -42,7 +42,10 @@ export const revalidate = 3600 // revalidate every hour
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await prisma.news_article.findUnique({
     where: { id: params.id },
-    include: { category: true },
+    include: {
+      category: true,
+      author: true,
+    },
   })
 
   if (!article || !article.published) return notFound()
@@ -50,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const imageUrl = article.useImage ? article.imageUrl : DEFAULT_BANNER
 
   return {
-    title: article.title,
+    title: `${article.title} | Daily Scoop AI`,
     description: article.body.substring(0, 160),
     keywords: article.keywords,
     openGraph: {
@@ -62,6 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: article.updatedAt.toISOString(),
       section: article.category?.name,
       tags: article.keywords,
+      authors: article.author?.name ? [article.author.name] : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -70,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: imageUrl ? [imageUrl] : [],
     },
     alternates: {
-      canonical: `/articles/${article.id}`,
+      canonical: `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.id}`,
     },
   }
 }
@@ -99,9 +103,35 @@ export default async function ArticlePage({ params }: Props) {
     thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    description: article.body.substring(0, 160),
+    image: article.imageUrl || DEFAULT_BANNER,
+    datePublished: article.createdAt,
+    dateModified: article.updatedAt,
+    author: {
+      "@type": "Person",
+      name: article.author?.name || "Daily Bot",
+    },
+    keywords: article.keywords.join(", "),
+    articleSection: article.category?.name,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.id}`,
+    },
+  }
+
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <ArticleLayout article={processedArticle} />
-    </HydrationBoundary>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ArticleLayout article={processedArticle} />
+      </HydrationBoundary>
+    </>
   )
 }

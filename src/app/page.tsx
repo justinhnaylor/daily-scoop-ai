@@ -11,9 +11,33 @@ import prisma from "../../lib/prisma"
 
 export async function generateMetadata() {
   return {
-    title: "Daily Scoop AI - Latest News",
-    description: "Get the latest news and updates from Daily Scoop AI",
-    keywords: ["news", "ai", "daily", "updates"],
+    title: "Daily Scoop AI - AI-Powered News and Analysis",
+    description:
+      "Get real-time news updates and in-depth analysis powered by artificial intelligence. Stay informed with trending stories across politics, technology, business, and more.",
+    keywords: [
+      "AI news",
+      "artificial intelligence news",
+      "trending news",
+      "real-time updates",
+      "news analysis",
+      "technology news",
+      "political news",
+      "business news",
+    ],
+    openGraph: {
+      title: "Daily Scoop AI - AI-Powered News and Analysis",
+      description:
+        "Get real-time news updates and in-depth analysis powered by artificial intelligence.",
+      images: ["/og-image.jpg"], // Add a default OG image
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Daily Scoop AI - AI-Powered News and Analysis",
+      description:
+        "Get real-time news updates and in-depth analysis powered by artificial intelligence.",
+      images: ["/og-image.jpg"],
+    },
   }
 }
 
