@@ -2,7 +2,8 @@ import prisma from "../../../../lib/prisma"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import ArticleLayout from "./layout"
-import type { NewsArticle } from "@prisma/client/wasm"
+import type { Article } from "@/types"
+
 import {
   HydrationBoundary,
   QueryClient,
@@ -18,17 +19,25 @@ interface Props {
   params: { id: string }
 }
 
-// Pre-generate all published articles at build time
+// Pre-generate most recent articles at build time
 export async function generateStaticParams() {
   const articles = await prisma.news_article.findMany({
     where: { published: true },
+    orderBy: { createdAt: "desc" },
+    take: 100, // Pre-generate most recent 100 articles
     select: { id: true },
   })
 
-  return articles.map((article: NewsArticle) => ({
+  return articles.map((article: Article) => ({
     id: article.id,
   }))
 }
+
+// Enable dynamic rendering for new articles
+export const dynamicParams = true
+
+// Add revalidation to update static pages periodically
+export const revalidate = 3600 // revalidate every hour
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await prisma.news_article.findUnique({
@@ -52,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: article.createdAt.toISOString(),
       modifiedTime: article.updatedAt.toISOString(),
       section: article.category?.name,
+      tags: article.keywords,
     },
     twitter: {
       card: "summary_large_image",
@@ -64,9 +74,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   }
 }
-
-// Add revalidation to update static pages periodically
-export const revalidate = 3600 // revalidate every hour
 
 export default async function ArticlePage({ params }: Props) {
   const queryClient = new QueryClient()
@@ -81,7 +88,6 @@ export default async function ArticlePage({ params }: Props) {
 
   if (!article || !article.published) return notFound()
 
-  // Prefetch the article data
   await queryClient.prefetchQuery({
     queryKey: ["article", params.id],
     queryFn: () => article,
