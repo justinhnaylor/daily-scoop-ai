@@ -1,8 +1,12 @@
+"use client"
+
 import { Article } from "@/types"
 import Image from "next/image"
 import { EyeIcon, ClockIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import RelatedArticles from "@/components/RelatedArticles"
+import { useEffect } from "react"
+import { useTrackView } from "@/hooks/useTrackView"
 
 function estimateReadingTime(text: string): number {
   const wordsPerMinute = 200
@@ -41,6 +45,13 @@ function formatArticleBody(body: string) {
 }
 
 export default function ArticleComponent({ article }: { article: Article }) {
+  const { mutate: trackView } = useTrackView()
+
+  useEffect(() => {
+    // Track view when component mounts
+    trackView(article.id)
+  }, [article.id, trackView])
+
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

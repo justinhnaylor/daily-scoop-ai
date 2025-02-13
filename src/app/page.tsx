@@ -124,14 +124,15 @@ async function getRecentStories(categoryId: number | null = null) {
   return processedStories
 }
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: { category?: string }
-}) {
+type Props = {
+  params: Promise<Record<string, never>>
+  searchParams: Promise<{ category?: string }>
+}
+
+export default async function Home({ searchParams }: Props) {
   const queryClient = new QueryClient()
-  const categoryId = searchParams.category
-    ? parseInt(searchParams.category)
+  const categoryId = (await searchParams).category
+    ? parseInt((await searchParams).category!)
     : null
 
   // Prefetch data
@@ -143,10 +144,21 @@ export default async function Home({
       ),
   })
 
-  const [trendingStories, recentStories, categories] = await Promise.all([
+  await queryClient.prefetchQuery({
+    queryKey: ["articles", categoryId, 1],
+    queryFn: () =>
+      fetch(
+        `/api/articles?${categoryId ? `category=${categoryId}&` : ""}page=1`
+      ).then((res) => res.json()),
+  })
+
+  const categories = await prisma.category.findMany({
+    orderBy: { name: "asc" },
+  })
+
+  const [trendingStories, recentStories] = await Promise.all([
     getTrendingStories(),
-    getRecentStories(categoryId),
-    prisma.category.findMany(),
+    getRecentStories(categoryId !== null ? categoryId : null),
   ])
 
   console.log("Trending Stories:", trendingStories)

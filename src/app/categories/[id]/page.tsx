@@ -1,10 +1,10 @@
 import prisma from "../../../../lib/prisma"
 import { Metadata } from "next"
 import type { Article } from "@/types"
-interface Props {
-  params: Promise<{
-    id: string
-  }>
+
+type Props = {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
