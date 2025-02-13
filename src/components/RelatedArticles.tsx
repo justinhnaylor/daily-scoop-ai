@@ -57,6 +57,8 @@ export default async function RelatedArticles({
                 }
                 alt={related.title}
                 fill
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
                 className="object-cover rounded-lg group-hover:opacity-90 transition-opacity"
               />
             </div>

@@ -39,6 +39,7 @@ export default function TrendingCarousel({
               <Image
                 src={story.imageUrl}
                 alt={story.title}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                 fill
                 className="object-cover"
               />

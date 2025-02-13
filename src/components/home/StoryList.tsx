@@ -19,6 +19,7 @@ export default function StoryList({ stories }: { stories: Article[] }) {
               src={story.thumbnailUrl || story.imageUrl || ""}
               alt={story.title}
               fill
+              sizes="(max-width: 768px) 96px, 128px"
               className="object-cover rounded-lg"
             />
           </div>

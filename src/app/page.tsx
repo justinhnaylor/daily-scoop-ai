@@ -8,6 +8,7 @@ import TrendingCarousel from "@/components/home/TrendingCarousel"
 import CategoryScroll from "@/components/home/CategoryScroll"
 import StoryList from "@/components/home/StoryList"
 import prisma from "../../lib/prisma"
+import { Article } from "@/types"
 
 export async function generateMetadata() {
   return {
@@ -45,9 +46,13 @@ async function getTrendingStories() {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  return prisma.news_article.findMany({
+  const DEFAULT_BANNER =
+    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
+  const DEFAULT_THUMBNAIL =
+    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
+
+  const stories = await prisma.news_article.findMany({
     where: {
-      published: true,
       createdAt: {
         gte: sevenDaysAgo,
       },
@@ -60,15 +65,30 @@ async function getTrendingStories() {
       id: true,
       title: true,
       imageUrl: true,
+      thumbnailUrl: true,
+      useImage: true,
       views: true,
+      published: true,
     },
   })
+
+  const processedStories = stories.map((story: Article) => ({
+    ...story,
+    imageUrl: story.useImage ? story.imageUrl : DEFAULT_BANNER,
+    thumbnailUrl: story.useImage ? story.thumbnailUrl : DEFAULT_THUMBNAIL,
+  }))
+
+  return processedStories
 }
 
 async function getRecentStories(categoryId: number | null = null) {
-  return prisma.news_article.findMany({
+  const DEFAULT_BANNER =
+    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
+  const DEFAULT_THUMBNAIL =
+    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
+
+  const stories = await prisma.news_article.findMany({
     where: {
-      published: true,
       ...(categoryId ? { categoryId } : {}),
     },
     orderBy: {
@@ -83,6 +103,14 @@ async function getRecentStories(categoryId: number | null = null) {
     },
     take: 20,
   })
+
+  const processedStories = stories.map((story: Article) => ({
+    ...story,
+    imageUrl: story.useImage ? story.imageUrl : DEFAULT_BANNER,
+    thumbnailUrl: story.useImage ? story.thumbnailUrl : DEFAULT_THUMBNAIL,
+  }))
+
+  return processedStories
 }
 
 export default async function Home() {
@@ -103,6 +131,10 @@ export default async function Home() {
     prisma.category.findMany(),
   ])
 
+  console.log("Trending Stories:", trendingStories)
+  console.log("Recent Stories:", recentStories)
+  console.log("Categories:", categories)
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="max-w-7xl mx-auto px-4 py-8">
@@ -116,19 +148,7 @@ export default async function Home() {
         <section>
           <h2 className="text-2xl font-bold mb-6">Recent Stories</h2>
           <Suspense fallback={<div>Loading...</div>}>
-            <CategoryScroll
-              categories={categories}
-              selectedCategory={null}
-              onSelect={(id) => {
-                const url = new URL(window.location.href)
-                if (id === null) {
-                  url.searchParams.delete("category")
-                } else {
-                  url.searchParams.set("category", id.toString())
-                }
-                window.history.pushState({}, "", url)
-              }}
-            />
+            <CategoryScroll categories={categories} selectedCategory={null} />
             <StoryList stories={recentStories} />
           </Suspense>
         </section>

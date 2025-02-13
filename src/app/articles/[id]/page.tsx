@@ -1,9 +1,8 @@
 import prisma from "../../../../lib/prisma"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import ArticleLayout from "./layout"
+import ArticleComponent from "./ArticleComponent"
 import type { Article } from "@/types"
-
 import {
   HydrationBoundary,
   QueryClient,
@@ -15,8 +14,8 @@ const DEFAULT_BANNER =
 const DEFAULT_THUMBNAIL =
   "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
 
-interface Props {
-  params: { id: string }
+type Props = {
+  params: Promise<{ id: string }>
 }
 
 // Pre-generate most recent articles at build time
@@ -24,7 +23,7 @@ export async function generateStaticParams() {
   const articles = await prisma.news_article.findMany({
     where: { published: true },
     orderBy: { createdAt: "desc" },
-    take: 100, // Pre-generate most recent 100 articles
+    take: 100,
     select: { id: true },
   })
 
@@ -39,20 +38,33 @@ export const dynamicParams = true
 // Add revalidation to update static pages periodically
 export const revalidate = 3600 // revalidate every hour
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+async function getArticle(articleId: string | undefined) {
+  if (!articleId) return null
+
   const article = await prisma.news_article.findUnique({
-    where: { id: params.id },
+    where: { id: articleId },
     include: {
       category: true,
       author: true,
     },
   })
 
-  if (!article || !article.published) return notFound()
+  if (!article || !article.published) return null
+  return article
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const article = await getArticle(id)
+
+  if (!article) return notFound()
 
   const imageUrl = article.useImage ? article.imageUrl : DEFAULT_BANNER
 
   return {
+    metadataBase: new URL(
+      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    ),
     title: `${article.title} | Daily Scoop AI`,
     description: article.body.substring(0, 160),
     keywords: article.keywords,
@@ -81,26 +93,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Props) {
   const queryClient = new QueryClient()
+  const { id } = await params
+  const article = await getArticle(id)
 
-  const article = await prisma.news_article.findUnique({
-    where: { id: params.id },
-    include: {
-      category: true,
-      author: true,
-    },
-  })
-
-  if (!article || !article.published) return notFound()
-
-  await queryClient.prefetchQuery({
-    queryKey: ["article", params.id],
-    queryFn: () => article,
-  })
+  if (!article) return notFound()
 
   const processedArticle = {
     ...article,
     imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
     thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
+    category: article.category || null,
+    author: article.author || null,
   }
 
   const jsonLd = {
@@ -123,6 +126,11 @@ export default async function ArticlePage({ params }: Props) {
     },
   }
 
+  await queryClient.prefetchQuery({
+    queryKey: ["article", id],
+    queryFn: () => processedArticle,
+  })
+
   return (
     <>
       <script
@@ -130,7 +138,7 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <ArticleLayout article={processedArticle} />
+        <ArticleComponent article={processedArticle} />
       </HydrationBoundary>
     </>
   )
