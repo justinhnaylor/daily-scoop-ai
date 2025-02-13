@@ -79,6 +79,12 @@ async function getRelatedArticles(article: Article) {
   })
 }
 
+const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL?.trim() || ""
+const validBaseUrl =
+  rawBaseUrl.startsWith("http://") || rawBaseUrl.startsWith("https://")
+    ? rawBaseUrl
+    : "http://localhost:3000"
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const article = await getArticle(id)
@@ -88,9 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const imageUrl = article.useImage ? article.imageUrl : DEFAULT_BANNER
 
   return {
-    metadataBase: new URL(
-      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-    ),
+    metadataBase: new URL(validBaseUrl),
     title: `${article.title} | Daily Scoop AI`,
     description: article.body.substring(0, 160),
     keywords: article.keywords,
@@ -112,7 +116,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: imageUrl ? [imageUrl] : [],
     },
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.id}`,
+      canonical: `${validBaseUrl}/articles/${article.id}`,
     },
   }
 }
@@ -150,7 +154,7 @@ export default async function ArticlePage({ params }: Props) {
     articleSection: article.category?.name,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.id}`,
+      "@id": `${validBaseUrl}/articles/${article.id}`,
     },
   }
 
