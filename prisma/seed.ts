@@ -46,7 +46,6 @@ async function main() {
         name: categoryName,
       },
     })
-    console.log(`Category "${categoryName}" created`)
   }
 
   const dailyBotUser = await prisma.user.create({

@@ -86,8 +86,6 @@ export async function POST(request: Request) {
     return response
   } catch (error) {
     console.error("Error updating views:", error)
-    console.log("Error type:", typeof error)
-    console.log("Error details:", error)
     const payload = { error: "Internal server error" }
     return new NextResponse(JSON.stringify(payload), {
       status: 500,
