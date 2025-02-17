@@ -58,7 +58,6 @@ async function getArticle(
   day: string,
   title: string
 ) {
-  console.log(`Fetching article for: ${year}-${month}-${day}, title: ${title}`)
   const date = new Date(`${year}-${month}-${day}`)
   const nextDay = new Date(date)
   nextDay.setDate(date.getDate() + 1)
@@ -78,7 +77,6 @@ async function getArticle(
   })
 
   if (!article || !article.published) {
-    console.log("Article not found or not published")
     return null
   }
   return article
