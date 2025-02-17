@@ -10,6 +10,8 @@ interface TrendingStory {
   title: string
   imageUrl?: string | null
   views: number
+  createdAt: Date
+  urlTitle: string
 }
 
 export default function TrendingCarousel({
@@ -90,14 +92,16 @@ export default function TrendingCarousel({
       >
         {stories.map((story) => (
           <Link
-            key={story.id}
-            href={`/articles/${story.id}`}
+            key={story?.id}
+            href={`/articles/${story?.createdAt.getFullYear()}/${
+              story?.createdAt.getMonth() + 1
+            }/${story?.createdAt.getDate()}/${story?.urlTitle}`}
             className="min-w-full h-full relative"
           >
             {story.imageUrl && (
               <Image
-                src={story.imageUrl}
-                alt={story.title}
+                src={story?.imageUrl}
+                alt={story?.title}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                 fill
                 className="object-cover"

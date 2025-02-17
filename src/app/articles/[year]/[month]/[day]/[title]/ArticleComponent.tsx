@@ -18,13 +18,13 @@ function estimateReadingTime(text: string): number {
 function formatArticleBody(body: string) {
   return body
     .replace(/\[bold\](.*?)\[\/bold\]/g, "<strong>$1</strong>")
-    .replace(/\[italics\](.*?)\[\/italics\]/g, "<em>$1</em>")
+    .replace(/\[italic\](.*?)\[\/italic\]/g, "<em>$1</em>")
     .replace(
-      /\[bold-italics\](.*?)\[\/bold-italics\]/g,
+      /\[bold-italic\](.*?)\[\/bold-italic\]/g,
       "<strong><em>$1</em></strong>"
     )
     .replace(
-      /\[underline-italics\](.*?)\[\/underline-italics\]/g,
+      /\[underline-italic\](.*?)\[\/underline-italic\]/g,
       "<u><em>$1</em></u>"
     )
     .replace(

@@ -5,6 +5,7 @@ export interface TrendingArticle {
   thumbnailUrl: string | null
   useImage: boolean
   views: number
+  createdAt: Date
   keywords: string[]
 }
 
@@ -17,6 +18,7 @@ export interface Article extends TrendingArticle {
   createdAt: Date
   updatedAt: Date
   published: boolean
+  urlTitle: string
   category?: {
     name: string
   } | null

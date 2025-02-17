@@ -11,7 +11,9 @@ export default function StoryList({ stories }: { stories: Article[] }) {
       {stories.map((story) => (
         <Link
           key={story.id}
-          href={`/articles/${story.id}`}
+          href={`/articles/${story.createdAt.getFullYear()}/${
+            story.createdAt.getMonth() + 1
+          }/${story.createdAt.getDate()}/${story.urlTitle}`}
           className="flex gap-4 items-start hover:bg-foreground/5 p-4 rounded-lg transition-colors"
         >
           <div className="relative w-32 h-32 flex-shrink-0">

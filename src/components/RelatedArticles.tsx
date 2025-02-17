@@ -17,8 +17,10 @@ export default function RelatedArticles({ articles }: { articles: Article[] }) {
       <div className="grid gap-6 md:grid-cols-3">
         {articles.map((related: Article) => (
           <Link
-            key={related.id}
-            href={`/articles/${related.id}`}
+            key={related?.id}
+            href={`/articles/${related?.createdAt.getFullYear()}/${
+              related?.createdAt.getMonth() + 1
+            }/${related?.createdAt.getDate()}/${related.urlTitle}`}
             className="group"
           >
             <div className="relative w-full h-48 mb-4">

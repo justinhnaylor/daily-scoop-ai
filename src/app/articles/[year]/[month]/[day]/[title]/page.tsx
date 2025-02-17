@@ -1,4 +1,4 @@
-import prisma from "../../../../lib/prisma"
+import prisma from "../../../../../../../lib/prisma"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import ArticleComponent from "./ArticleComponent"
@@ -17,7 +17,13 @@ const DEFAULT_THUMBNAIL =
   "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: Promise<{
+    year: string
+    month: string
+    day: string
+    title: string
+    urlTitle: string
+  }>
 }
 
 // Pre-generate most recent articles at build time
@@ -26,12 +32,18 @@ export async function generateStaticParams() {
     where: { published: true },
     orderBy: { createdAt: "desc" },
     take: 100,
-    select: { id: true },
+    select: { id: true, title: true, createdAt: true, urlTitle: true },
   })
 
-  return articles.map((article: { id: string }) => ({
-    id: article.id,
-  }))
+  return articles.map((article) => {
+    const date = new Date(article.createdAt)
+    return {
+      year: date.getFullYear().toString(),
+      month: (date.getMonth() + 1).toString().padStart(2, "0"),
+      day: date.getDate().toString().padStart(2, "0"),
+      title: article?.urlTitle,
+    }
+  })
 }
 
 // Enable dynamic rendering for new articles
@@ -40,18 +52,35 @@ export const dynamicParams = true
 // Add revalidation to update static pages periodically
 export const revalidate = 3600 // revalidate every hour
 
-async function getArticle(articleId: string | undefined) {
-  if (!articleId) return null
+async function getArticle(
+  year: string,
+  month: string,
+  day: string,
+  title: string
+) {
+  console.log(`Fetching article for: ${year}-${month}-${day}, title: ${title}`)
+  const date = new Date(`${year}-${month}-${day}`)
+  const nextDay = new Date(date)
+  nextDay.setDate(date.getDate() + 1)
 
-  const article = await prisma.news_article.findUnique({
-    where: { id: articleId },
+  const article = await prisma.news_article.findFirst({
+    where: {
+      urlTitle: title,
+      createdAt: {
+        gte: date,
+        lt: nextDay,
+      },
+    },
     include: {
       category: true,
       author: true,
     },
   })
 
-  if (!article || !article.published) return null
+  if (!article || !article.published) {
+    console.log("Article not found or not published")
+    return null
+  }
   return article
 }
 
@@ -86,8 +115,8 @@ const validBaseUrl =
     : "http://localhost:3000"
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
-  const article = await getArticle(id)
+  const { year, month, day, title } = await params
+  const article = await getArticle(year, month, day, title)
 
   if (!article) return notFound()
 
@@ -123,8 +152,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Props) {
   const queryClient = new QueryClient()
-  const { id } = await params
-  const article = await getArticle(id)
+  const { year, month, day, title } = await params
+  const article = await getArticle(year, month, day, title)
 
   if (!article) return notFound()
 
@@ -159,7 +188,7 @@ export default async function ArticlePage({ params }: Props) {
   }
 
   await queryClient.prefetchQuery({
-    queryKey: ["article", id],
+    queryKey: ["article", `${year}-${month}-${day}-${title}`],
     queryFn: () => ({ article: processedArticle, relatedArticles }),
   })
 

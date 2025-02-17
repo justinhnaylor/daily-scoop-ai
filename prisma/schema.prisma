@@ -25,6 +25,7 @@ model user {
 model news_article {
   id         String     @id @default(uuid())
   title      String     @db.Text
+  urlTitle   String     @db.Text
   body       String     @db.Text
   imageUrl   String?
   thumbnailUrl   String?

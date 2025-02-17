@@ -69,6 +69,8 @@ async function getTrendingStories() {
       useImage: true,
       views: true,
       published: true,
+      createdAt: true,
+      urlTitle: true,
     },
   })
 
@@ -80,6 +82,8 @@ async function getTrendingStories() {
     useImage: boolean
     views: number
     published: boolean
+    createdAt: Date
+    urlTitle: string
   }
 
   const processedStories = stories.map((story: StoryResult) => ({
@@ -161,10 +165,6 @@ export default async function Home({ searchParams }: Props) {
     getTrendingStories(),
     getRecentStories(categoryId),
   ])
-
-  console.log("Trending Stories:", trendingStories)
-  console.log("Recent Stories:", recentStories)
-  console.log("Categories:", categories)
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

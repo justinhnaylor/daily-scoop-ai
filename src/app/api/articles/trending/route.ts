@@ -29,6 +29,7 @@ export async function GET() {
       thumbnailUrl: true,
       useImage: true,
       views: true,
+      createdAt: true,
       keywords: true,
     },
   })
