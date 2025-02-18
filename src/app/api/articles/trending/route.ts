@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import prisma from "../../../../../lib/prisma"
-import type { TrendingArticle } from "@/types"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -39,10 +38,11 @@ export async function GET(request: Request) {
       views: true,
       createdAt: true,
       urlTitle: true,
+      keywords: true,
     },
   })
 
-  const processedArticles = articles.map((article: TrendingArticle) => ({
+  const processedArticles = articles.map((article) => ({
     ...article,
     defaultImages: {
       banner: DEFAULT_BANNER,
