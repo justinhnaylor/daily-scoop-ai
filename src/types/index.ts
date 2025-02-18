@@ -27,6 +27,16 @@ export interface Article extends TrendingArticle {
     username: string
     profilePictureUrl: string | null
   }
+  defaultImages?: {
+    banner: {
+      light: string
+      dark: string
+    }
+    thumbnail: {
+      light: string
+      dark: string
+    }
+  }
 }
 
 export interface Category {

@@ -18,7 +18,8 @@ export const defaultMetadata: Metadata = {
   ],
   referrer: "origin-when-cross-origin",
   themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1",
+  viewport:
+    "width=device-width, initial-scale=1, maximum-scale=1 user-scalable=no",
   robots: {
     index: true,
     follow: true,

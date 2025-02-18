@@ -2,10 +2,20 @@ import { NextResponse } from "next/server"
 import prisma from "../../../../../lib/prisma"
 import type { TrendingArticle } from "@/types"
 
-const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
-const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const theme = searchParams.get("theme") ?? "light"
 
-export async function GET() {
+  const DEFAULT_BANNER = {
+    light: "/daily-scoop-banner-light.webp",
+    dark: "/daily-scoop-banner-dark.webp",
+  }
+
+  const DEFAULT_THUMBNAIL = {
+    light: "/daily-scoop-icon-light.webp",
+    dark: "/daily-scoop-icon-dark.webp",
+  }
+
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
@@ -28,14 +38,22 @@ export async function GET() {
       useImage: true,
       views: true,
       createdAt: true,
-      keywords: true,
+      urlTitle: true,
     },
   })
 
   const processedArticles = articles.map((article: TrendingArticle) => ({
     ...article,
-    imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
-    thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
+    defaultImages: {
+      banner: DEFAULT_BANNER,
+      thumbnail: DEFAULT_THUMBNAIL,
+    },
+    imageUrl: article.useImage
+      ? article.imageUrl
+      : DEFAULT_BANNER[theme as "light" | "dark"],
+    thumbnailUrl: article.useImage
+      ? article.thumbnailUrl
+      : DEFAULT_THUMBNAIL[theme as "light" | "dark"],
   }))
 
   return NextResponse.json(processedArticles)

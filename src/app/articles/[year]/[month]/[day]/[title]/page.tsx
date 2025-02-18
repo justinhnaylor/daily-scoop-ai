@@ -11,10 +11,15 @@ import {
 
 import type { Article } from "@/types"
 
-const DEFAULT_BANNER =
-  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
-const DEFAULT_THUMBNAIL =
-  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
+const DEFAULT_BANNER = {
+  light: "/daily-scoop-banner-light.webp",
+  dark: "/daily-scoop-banner-dark.webp",
+}
+
+const DEFAULT_THUMBNAIL = {
+  light: "/daily-scoop-icon-light.webp",
+  dark: "/daily-scoop-icon-dark.webp",
+}
 
 type Props = {
   params: Promise<{
@@ -156,7 +161,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!article) return notFound()
 
-  const imageUrl = article.useImage ? article.imageUrl : DEFAULT_BANNER
+  const imageUrl = article.useImage ? article.imageUrl : DEFAULT_BANNER.light
 
   return {
     metadataBase: new URL(validBaseUrl),
@@ -195,8 +200,14 @@ export default async function ArticlePage({ params }: Props) {
 
   const processedArticle = {
     ...article,
-    imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
-    thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
+    defaultImages: {
+      banner: DEFAULT_BANNER,
+      thumbnail: DEFAULT_THUMBNAIL,
+    },
+    imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER.light,
+    thumbnailUrl: article.useImage
+      ? article.thumbnailUrl
+      : DEFAULT_THUMBNAIL.light,
     category: article.category || null,
     author: article.author || null,
   }
@@ -208,7 +219,7 @@ export default async function ArticlePage({ params }: Props) {
     "@type": "NewsArticle",
     headline: article.title,
     description: article.body.substring(0, 160),
-    image: article.imageUrl || DEFAULT_BANNER,
+    image: article.imageUrl || DEFAULT_BANNER.light,
     datePublished: article.createdAt,
     dateModified: article.updatedAt,
     author: {

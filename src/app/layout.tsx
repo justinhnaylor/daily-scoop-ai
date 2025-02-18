@@ -7,6 +7,8 @@ import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import { ThemeProvider } from "@/components/theme-provider"
+import { customFont } from "@/lib/fonts"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
           rel="icon"
@@ -63,9 +65,13 @@ export default function RootLayout({
         />
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
         <meta name="apple-mobile-web-app-title" content="Daily Scoop AI" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${customFont.variable} antialiased min-h-screen flex flex-col`}
       >
         <Script
           strategy="afterInteractive"
@@ -84,9 +90,16 @@ export default function RootLayout({
           }}
         />
         <QueryProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ThemeProvider>
           <Analytics />
           <SpeedInsights />
         </QueryProvider>

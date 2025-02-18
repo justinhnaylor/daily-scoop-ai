@@ -9,6 +9,9 @@ import CategoryScroll from "@/components/home/CategoryScroll"
 import StoryList from "@/components/home/StoryList"
 import prisma from "../../lib/prisma"
 import { Article } from "@/types"
+import SkeletonTrendingCarousel from "@/components/home/skeletons/SkeletonTrendingCarousel"
+import SkeletonCategoryScroll from "@/components/home/skeletons/SkeletonCategoryScroll"
+import SkeletonStoryList from "@/components/home/skeletons/SkeletonStoryList"
 
 export async function generateMetadata() {
   return {
@@ -42,12 +45,19 @@ export async function generateMetadata() {
   }
 }
 
-async function getTrendingStories() {
+async function getTrendingStories(theme: string) {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
-  const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
+  const DEFAULT_BANNER = {
+    light: "/daily-scoop-banner-light.webp",
+    dark: "/daily-scoop-banner-dark.webp",
+  }
+
+  const DEFAULT_THUMBNAIL = {
+    light: "/daily-scoop-thumb-dark.webp",
+    dark: "/daily-scoop-thumb-light.webp",
+  }
 
   const stories = await prisma.news_article.findMany({
     where: {
@@ -86,16 +96,34 @@ async function getTrendingStories() {
 
   const processedStories = stories.map((story: StoryResult) => ({
     ...story,
-    imageUrl: story.useImage ? story.imageUrl : DEFAULT_BANNER,
-    thumbnailUrl: story.useImage ? story.thumbnailUrl : DEFAULT_THUMBNAIL,
+    defaultImages: {
+      banner: DEFAULT_BANNER,
+      thumbnail: DEFAULT_THUMBNAIL,
+    },
+    imageUrl: story.useImage
+      ? story.imageUrl
+      : DEFAULT_BANNER[theme as "light" | "dark"],
+    thumbnailUrl: story.useImage
+      ? story.thumbnailUrl
+      : DEFAULT_THUMBNAIL[theme as "light" | "dark"],
   }))
 
   return processedStories
 }
 
-async function getRecentStories(categoryId: number | null = null) {
-  const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
-  const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
+async function getRecentStories(
+  categoryId: number | null = null,
+  theme: string
+) {
+  const DEFAULT_BANNER = {
+    light: "/daily-scoop-banner-light.webp",
+    dark: "/daily-scoop-banner-dark.webp",
+  }
+
+  const DEFAULT_THUMBNAIL = {
+    light: "/daily-scoop-icon-light.webp",
+    dark: "/daily-scoop-icon-dark.webp",
+  }
 
   const stories = await prisma.news_article.findMany({
     where: {
@@ -117,8 +145,16 @@ async function getRecentStories(categoryId: number | null = null) {
 
   const processedStories = stories.map((story: Article) => ({
     ...story,
-    imageUrl: story.useImage ? story.imageUrl : DEFAULT_BANNER,
-    thumbnailUrl: story.useImage ? story.thumbnailUrl : DEFAULT_THUMBNAIL,
+    defaultImages: {
+      banner: DEFAULT_BANNER,
+      thumbnail: DEFAULT_THUMBNAIL,
+    },
+    imageUrl: story.useImage
+      ? story.imageUrl
+      : DEFAULT_BANNER[theme as "light" | "dark"],
+    thumbnailUrl: story.useImage
+      ? story.thumbnailUrl
+      : DEFAULT_THUMBNAIL[theme as "light" | "dark"],
   }))
 
   return processedStories
@@ -132,24 +168,25 @@ export default async function Home({ searchParams }: Props) {
   // Await the promise to get the search parameters
   const { category } = await searchParams
   const categoryId = category ? parseInt(category) : null
-
   const queryClient = new QueryClient()
 
   // Prefetch data for trending articles
   await queryClient.prefetchQuery({
-    queryKey: ["trending-articles"],
+    queryKey: ["trending-articles", "light"],
     queryFn: () =>
-      fetch(`${process.env.BASE_URL}/api/articles/trending`).then((res) =>
-        res.json()
+      fetch(`${process.env.BASE_URL}/api/articles/trending?theme=light`).then(
+        (res) => res.json()
       ),
   })
 
   // Prefetch articles for the given category on page 1
   await queryClient.prefetchQuery({
-    queryKey: ["articles", categoryId, 1],
+    queryKey: ["articles", categoryId, 1, "light"],
     queryFn: () =>
       fetch(
-        `/api/articles?${categoryId ? `category=${categoryId}&` : ""}page=1`
+        `/api/articles?${
+          categoryId ? `category=${categoryId}&` : ""
+        }page=1&theme=light`
       ).then((res) => res.json()),
   })
 
@@ -158,8 +195,8 @@ export default async function Home({ searchParams }: Props) {
   })
 
   const [trendingStories, recentStories] = await Promise.all([
-    getTrendingStories(),
-    getRecentStories(categoryId),
+    getTrendingStories("light"),
+    getRecentStories(categoryId, "light"),
   ])
 
   return (
@@ -167,14 +204,21 @@ export default async function Home({ searchParams }: Props) {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <section className="mb-12">
           <h1 className="text-2xl font-bold mb-6">Trending Stories</h1>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<SkeletonTrendingCarousel />}>
             <TrendingCarousel stories={trendingStories} />
           </Suspense>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold mb-6">Recent Stories</h2>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <>
+                <SkeletonCategoryScroll />
+                <SkeletonStoryList />
+              </>
+            }
+          >
             <CategoryScroll
               categories={categories}
               selectedCategory={categoryId}

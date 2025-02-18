@@ -2,16 +2,24 @@ import { NextResponse } from "next/server"
 import prisma from "../../../../lib/prisma"
 import type { TrendingArticle } from "@/types"
 
-const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
-const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const categoryId = searchParams.get("category")
     ? parseInt(searchParams.get("category")!)
     : null
   const page = parseInt(searchParams.get("page") ?? "1")
+  const theme = searchParams.get("theme") ?? "light"
   const limit = 10
+
+  const DEFAULT_BANNER =
+    theme === "dark"
+      ? "/daily-scoop-banner-dark.webp"
+      : "/daily-scoop-banner-light.webp"
+
+  const DEFAULT_THUMBNAIL =
+    theme === "dark"
+      ? "/daily-scoop-icon-dark.webp"
+      : "/daily-scoop-icon-light.webp"
 
   const articles = await prisma.news_article.findMany({
     where: {

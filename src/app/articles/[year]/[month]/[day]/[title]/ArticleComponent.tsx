@@ -8,6 +8,7 @@ import RelatedArticles from "@/components/RelatedArticles"
 import { useEffect } from "react"
 import { useTrackView } from "@/hooks/useTrackView"
 import AudioPlayer from "@/components/AudioPlayer"
+import { useTheme } from "next-themes"
 
 function estimateReadingTime(text: string): number {
   const wordsPerMinute = 200
@@ -52,10 +53,16 @@ export default function ArticleComponent({
   article: Article
   relatedArticles: Article[]
 }) {
+  const { theme } = useTheme()
   const { mutate: trackView } = useTrackView()
 
+  const defaultBanner =
+    article.defaultImages?.banner?.[theme as "light" | "dark"] ||
+    article.defaultImages?.banner?.light
+
+  const imageUrl = article.useImage ? article.imageUrl : defaultBanner
+
   useEffect(() => {
-    // Track view when component mounts
     trackView(article.id)
   }, [article.id, trackView])
 
@@ -113,7 +120,7 @@ export default function ArticleComponent({
       >
         <div className="relative w-full h-[400px] mb-8">
           <Image
-            src={article.imageUrl || ""}
+            src={imageUrl || defaultBanner || ""}
             alt={article.title}
             fill
             priority
@@ -144,7 +151,7 @@ export default function ArticleComponent({
             </div>
           </div>
 
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg text-foreground/90 max-w-none">
             {formatArticleBody(article.body)}
           </div>
         </div>
