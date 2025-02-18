@@ -58,24 +58,46 @@ async function getArticle(
   day: string,
   title: string
 ) {
-  const date = new Date(`${year}-${month}-${day}`)
-  const nextDay = new Date(date)
-  nextDay.setDate(date.getDate() + 1)
+  // Create UTC date range for the specific day with a buffer
+  const startDate = new Date(
+    Date.UTC(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      -12, // Start 12 hours before the day
+      0,
+      0,
+      0
+    )
+  )
+
+  const endDate = new Date(
+    Date.UTC(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      35,
+      59,
+      59,
+      999
+    )
+  )
 
   console.log("Article search params:", {
     urlTitle: title,
     dateRange: {
-      from: date.toISOString(),
-      to: nextDay.toISOString(),
+      from: startDate.toISOString(),
+      to: endDate.toISOString(),
     },
   })
 
   const article = await prisma.news_article.findFirst({
     where: {
       urlTitle: title,
+      published: true,
       createdAt: {
-        gte: date,
-        lt: nextDay,
+        gte: startDate,
+        lte: endDate,
       },
     },
     include: {
@@ -94,6 +116,7 @@ async function getArticle(
   if (!article || !article.published) {
     return null
   }
+
   return article
 }
 

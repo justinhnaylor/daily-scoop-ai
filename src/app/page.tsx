@@ -29,7 +29,7 @@ export async function generateMetadata() {
       title: "Daily Scoop AI - AI-Powered News and Analysis",
       description:
         "Get real-time news updates and in-depth analysis powered by artificial intelligence.",
-      images: ["/og-image.jpg"], // Add a default OG image
+      images: ["/og-image.jpg"],
       type: "website",
     },
     twitter: {
@@ -46,10 +46,8 @@ async function getTrendingStories() {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const DEFAULT_BANNER =
-    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
-  const DEFAULT_THUMBNAIL =
-    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
+  const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
+  const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
 
   const stories = await prisma.news_article.findMany({
     where: {
@@ -96,10 +94,8 @@ async function getTrendingStories() {
 }
 
 async function getRecentStories(categoryId: number | null = null) {
-  const DEFAULT_BANNER =
-    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
-  const DEFAULT_THUMBNAIL =
-    "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
+  const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
+  const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
 
   const stories = await prisma.news_article.findMany({
     where: {

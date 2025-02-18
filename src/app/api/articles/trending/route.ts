@@ -2,10 +2,8 @@ import { NextResponse } from "next/server"
 import prisma from "../../../../../lib/prisma"
 import type { TrendingArticle } from "@/types"
 
-const DEFAULT_BANNER =
-  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_banner.webp"
-const DEFAULT_THUMBNAIL =
-  "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//d_news_thumbnail.webp"
+const DEFAULT_BANNER = "/daily-scoop-banner-light.webp"
+const DEFAULT_THUMBNAIL = "/daily-scoop-thumb-light.webp"
 
 export async function GET() {
   const sevenDaysAgo = new Date()
