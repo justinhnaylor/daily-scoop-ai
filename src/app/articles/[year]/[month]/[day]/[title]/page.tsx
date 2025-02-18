@@ -62,6 +62,14 @@ async function getArticle(
   const nextDay = new Date(date)
   nextDay.setDate(date.getDate() + 1)
 
+  console.log("Article search params:", {
+    urlTitle: title,
+    dateRange: {
+      from: date.toISOString(),
+      to: nextDay.toISOString(),
+    },
+  })
+
   const article = await prisma.news_article.findFirst({
     where: {
       urlTitle: title,
@@ -74,6 +82,13 @@ async function getArticle(
       category: true,
       author: true,
     },
+  })
+
+  console.log("Article search result:", {
+    found: !!article,
+    articleDate: article?.createdAt?.toISOString(),
+    published: article?.published,
+    urlTitle: article?.urlTitle,
   })
 
   if (!article || !article.published) {
