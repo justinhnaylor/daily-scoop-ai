@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     // Revalidate the home page
     revalidatePath("/")
     // Revalidate all article pages
-    revalidatePath("/articles/[id]")
+    revalidatePath("/articles/[year]/[month]/[day]/[title]")
     return NextResponse.json({ revalidated: true, now: Date.now() })
   } catch (error) {
     // Log the error for debugging
