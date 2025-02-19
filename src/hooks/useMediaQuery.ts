@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 
 // Define breakpoint values
 export const breakpoints = {
+  xs: "(min-width: 500px) and (max-width: 639px)",
   sm: "(min-width: 640px)",
   md: "(min-width: 768px)",
   lg: "(min-width: 1024px)",
@@ -16,6 +17,7 @@ type Breakpoint = keyof typeof breakpoints
 // Create a hook that returns an object with boolean values for each breakpoint
 export function useMediaQuery(): Record<Breakpoint, boolean> {
   const [matches, setMatches] = useState<Record<Breakpoint, boolean>>({
+    xs: false,
     sm: false,
     md: false,
     lg: false,
