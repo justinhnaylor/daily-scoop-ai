@@ -14,26 +14,50 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip"
 import { useTheme } from "next-themes"
+import { useState, useEffect } from "react"
+import { Skeleton } from "./ui/skeleton"
 
 export default function Header() {
   const { md, sm } = useMediaQuery()
   const imageSize = md ? 90 : sm ? 70 : 50
-  const { theme } = useTheme()
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Get initial theme state before mounting
+  const isDark =
+    typeof window !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : false
+
+  const imageSrc = mounted
+    ? resolvedTheme === "dark"
+      ? "/daily-scoop-thumb-dark.webp"
+      : "/daily-scoop-thumb-light.webp"
+    : isDark
+    ? "/daily-scoop-thumb-dark.webp"
+    : "/daily-scoop-thumb-light.webp"
 
   return (
     <header>
-      <div className="container-fluid flex justify-between items-center py-6 mx-4">
+      <div className="container-fluid flex justify-between items-center py-5 mx-4">
         <Link href="/" className="flex items-center gap-2 sm:gap-4">
-          <Image
-            src={
-              theme === "dark"
-                ? "/daily-scoop-thumb-dark.webp"
-                : "/daily-scoop-thumb-light.webp"
-            }
-            alt="Daily Scoop AI Logo"
-            width={imageSize}
-            height={imageSize}
-          />
+          {!mounted ? (
+            <Skeleton
+              className="rounded-md"
+              style={{ width: imageSize, height: imageSize }}
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt="Daily Scoop AI Logo"
+              width={imageSize}
+              height={imageSize}
+            />
+          )}
           <div className="flex flex-col">
             <TypographyH4
               className={md ? "text-xl" : sm ? "text-md" : "text-[8px]"}
@@ -53,10 +77,21 @@ export default function Header() {
         <nav
           className={md ? "flex items-center gap-6" : "flex items-center gap-4"}
         >
-          <ModeToggle
-            className={md ? "h-9 w-9" : sm ? "h-8 w-8" : "h-7 w-7"}
-            iconClassName={md ? "h-5 w-5" : sm ? "h-4 w-4" : "h-3 w-3"}
-          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <ModeToggle
+                    className={md ? "h-9 w-9" : sm ? "h-8 w-8" : "h-7 w-7"}
+                    iconClassName={md ? "h-5 w-5" : sm ? "h-4 w-4" : "h-3 w-3"}
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle theme</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Link
             href="/about"
             className={

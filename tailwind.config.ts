@@ -8,7 +8,6 @@ export default {
       pattern: /^opacity-\[\d+%\]$/,
     },
   ],
-
   darkMode: ["class"],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",

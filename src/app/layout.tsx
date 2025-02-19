@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import QueryProvider from "@/providers/QueryProvider"
-import Script from "next/script"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Header from "@/components/Header"
@@ -57,6 +56,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script>{`
+          (function() {
+            try {
+              const storedTheme = localStorage.getItem('theme')
+              if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark')
+              }
+            } catch (e) {
+              console.error('Theme initialization failed:', e)
+            }
+          })()
+        `}</script>
         <link
           rel="icon"
           type="image/png"
@@ -67,32 +78,16 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Daily Scoop AI" />
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover"
         />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${customFont.variable} antialiased min-h-screen flex flex-col`}
       >
-        <Script
-          strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-        />
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
-            `,
-          }}
-        />
         <QueryProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >

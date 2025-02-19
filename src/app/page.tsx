@@ -5,13 +5,12 @@ import {
   QueryClient,
 } from "@tanstack/react-query"
 import TrendingCarousel from "@/components/home/TrendingCarousel"
-import CategoryScroll from "@/components/home/CategoryScroll"
-import StoryList from "@/components/home/StoryList"
 import prisma from "../../lib/prisma"
 import { Article } from "@/types"
 import SkeletonTrendingCarousel from "@/components/home/skeletons/SkeletonTrendingCarousel"
 import SkeletonCategoryScroll from "@/components/home/skeletons/SkeletonCategoryScroll"
 import SkeletonStoryList from "@/components/home/skeletons/SkeletonStoryList"
+import ClientWrapper from "@/components/home/ClientWrapper"
 
 export async function generateMetadata() {
   return {
@@ -68,7 +67,7 @@ async function getTrendingStories(theme: string) {
     orderBy: {
       views: "desc",
     },
-    take: 5,
+    take: 8,
     select: {
       id: true,
       title: true,
@@ -113,7 +112,9 @@ async function getTrendingStories(theme: string) {
 
 async function getRecentStories(
   categoryId: number | null = null,
-  theme: string
+  theme: string,
+  page: number = 1,
+  limit: number = 10
 ) {
   const DEFAULT_BANNER = {
     light: "/daily-scoop-banner-light.webp",
@@ -124,6 +125,8 @@ async function getRecentStories(
     light: "/daily-scoop-icon-light.webp",
     dark: "/daily-scoop-icon-dark.webp",
   }
+
+  const skip = (page - 1) * limit
 
   const stories = await prisma.news_article.findMany({
     where: {
@@ -140,7 +143,15 @@ async function getRecentStories(
         },
       },
     },
-    take: 20,
+    take: limit,
+    skip,
+  })
+
+  const total = await prisma.news_article.count({
+    where: {
+      published: true,
+      ...(categoryId ? { categoryId } : {}),
+    },
   })
 
   const processedStories = stories.map((story: Article) => ({
@@ -157,7 +168,10 @@ async function getRecentStories(
       : DEFAULT_THUMBNAIL[theme as "light" | "dark"],
   }))
 
-  return processedStories
+  return {
+    stories: processedStories,
+    hasMore: skip + stories.length < total,
+  }
 }
 
 type Props = {
@@ -165,7 +179,6 @@ type Props = {
 }
 
 export default async function Home({ searchParams }: Props) {
-  // Await the promise to get the search parameters
   const { category } = await searchParams
   const categoryId = category ? parseInt(category) : null
   const queryClient = new QueryClient()
@@ -194,14 +207,14 @@ export default async function Home({ searchParams }: Props) {
     orderBy: { name: "asc" },
   })
 
-  const [trendingStories, recentStories] = await Promise.all([
+  const [trendingStories, recentStoriesData] = await Promise.all([
     getTrendingStories("light"),
-    getRecentStories(categoryId, "light"),
+    getRecentStories(categoryId, "light", 1, 10),
   ])
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <section className="mb-12">
           <h1 className="text-2xl font-bold mb-6">Trending Stories</h1>
           <Suspense fallback={<SkeletonTrendingCarousel />}>
@@ -219,11 +232,12 @@ export default async function Home({ searchParams }: Props) {
               </>
             }
           >
-            <CategoryScroll
+            <ClientWrapper
               categories={categories}
               selectedCategory={categoryId}
+              initialStories={recentStoriesData.stories}
+              hasMore={recentStoriesData.hasMore}
             />
-            <StoryList stories={recentStories} />
           </Suspense>
         </section>
       </main>

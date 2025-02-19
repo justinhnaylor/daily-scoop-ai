@@ -21,6 +21,21 @@ body {
   overflow-x: hidden;
   position: relative;
   width: 100%;
+  touch-action: pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: none;
+}
+
+html {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.category-scroll {
+  overflow-x: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
 }
 
 @layer utilities {
@@ -100,4 +115,45 @@ body {
 
 .custom-font {
   font-family: var(--font-custom);
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.hover\:scrollbar-visible:hover {
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
+}
+
+.hover\:scrollbar-visible:hover::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+  height: 5px;
+}
+
+.hover\:scrollbar-visible:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb {
+  background: #d2d2d2;
+  border-radius: 2px;
+}
+
+.dark .hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb {
+  background: #3e3e3e;
+}
+
+.hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb:hover {
+  background: #bebebe;
+}
+
+.dark .hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb:hover {
+  background: #4d4d4d;
 }

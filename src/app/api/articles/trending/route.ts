@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     orderBy: {
       views: "desc",
     },
-    take: 5,
+    take: 8,
     select: {
       id: true,
       title: true,

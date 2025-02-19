@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, TouchEvent, MouseEvent } from "react"
+import { useState, useEffect } from "react"
 import { EyeIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import Link from "next/link"
@@ -33,43 +33,21 @@ export default function TrendingCarousel({
 }) {
   const { theme } = useTheme()
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startPos, setStartPos] = useState(0)
-  const [currentTranslate, setCurrentTranslate] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
-  const handleDragStart = (e: TouchEvent | MouseEvent) => {
-    setIsDragging(true)
-    setIsPaused(true)
-    const pos = "touches" in e ? e.touches[0].clientX : e.clientX
-    setStartPos(pos)
-  }
-
-  const handleDragMove = (e: TouchEvent | MouseEvent) => {
-    if (!isDragging) return
-    const currentPosition = "touches" in e ? e.touches[0].clientX : e.clientX
-    const diff = currentPosition - startPos
-    const translate = currentIndex * -100 + (diff / window.innerWidth) * 100
-    setCurrentTranslate(
-      Math.max(Math.min(translate, 0), -((stories.length - 1) * 100))
+  const handlePrevious = () => {
+    setCurrentIndex((current) =>
+      current === 0 ? stories.length - 1 : current - 1
     )
+    setIsPaused(true)
+    setTimeout(() => setIsPaused(false), 1000)
   }
 
-  const handleDragEnd = () => {
-    if (!isDragging) return
-    setIsDragging(false)
-
-    const moveThreshold = 20
-    const diff = currentTranslate + currentIndex * 100
-
-    if (Math.abs(diff) > moveThreshold) {
-      if (diff > 0 && currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1)
-      } else if (diff < 0 && currentIndex < stories.length - 1) {
-        setCurrentIndex(currentIndex + 1)
-      }
-    }
-
+  const handleNext = () => {
+    setCurrentIndex((current) =>
+      current === stories.length - 1 ? 0 : current + 1
+    )
+    setIsPaused(true)
     setTimeout(() => setIsPaused(false), 1000)
   }
 
@@ -85,23 +63,12 @@ export default function TrendingCarousel({
   }, [stories.length, isPaused])
 
   return (
-    <div className="relative overflow-hidden h-[400px] w-full">
+    <div className="relative overflow-hidden h-[300px] sm:h-[400px] w-full group">
       <div
-        className={`flex h-full ${
-          !isDragging ? "transition-transform duration-500 ease-in-out" : ""
-        }`}
+        className="flex h-full transition-transform duration-500 ease-in-out"
         style={{
-          transform: `translateX(${
-            isDragging ? currentTranslate : -(currentIndex * 100)
-          }%)`,
+          transform: `translateX(-${currentIndex * 100}%)`,
         }}
-        onTouchStart={handleDragStart}
-        onTouchMove={handleDragMove}
-        onTouchEnd={handleDragEnd}
-        onMouseDown={handleDragStart}
-        onMouseMove={handleDragMove}
-        onMouseUp={handleDragEnd}
-        onMouseLeave={handleDragEnd}
       >
         {stories.map((story) => {
           const defaultBanner =
@@ -139,7 +106,58 @@ export default function TrendingCarousel({
         })}
       </div>
 
-      {/* Pagination dots */}
+      <div
+        onClick={handlePrevious}
+        className="absolute left-0 top-0 h-full w-[100px] bg-gradient-to-r from-black/0 
+        hover:opacity-100 opacity-0 transition-opacity cursor-pointer hover:from-black/20"
+      >
+        <button
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-transparent hover:bg-black/0 text-white/30 p-2 rounded-full"
+          aria-label="Previous slide"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-8 h-8"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5L8.25 12l7.5-7.5"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        onClick={handleNext}
+        className="absolute right-0 top-0 h-full w-[100px] bg-gradient-to-l from-black/0 
+        hover:opacity-100 opacity-0 transition-opacity cursor-pointer hover:from-black/20"
+      >
+        <button
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent hover:bg-black/0 text-white/30 p-2 rounded-full"
+          aria-label="Next slide"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-8 h-8"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8.25 4.5l7.5 7.5-7.5 7.5"
+            />
+          </svg>
+        </button>
+      </div>
+
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
         {stories.map((_, index) => (
           <button

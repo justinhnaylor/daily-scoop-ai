@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import prisma from "../../../../lib/prisma"
-import type { TrendingArticle } from "@/types"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -10,6 +9,7 @@ export async function GET(request: Request) {
   const page = parseInt(searchParams.get("page") ?? "1")
   const theme = searchParams.get("theme") ?? "light"
   const limit = 10
+  const skip = (page - 1) * limit
 
   const DEFAULT_BANNER =
     theme === "dark"
@@ -21,41 +21,41 @@ export async function GET(request: Request) {
       ? "/daily-scoop-icon-dark.webp"
       : "/daily-scoop-icon-light.webp"
 
-  const articles = await prisma.news_article.findMany({
-    where: {
-      published: true,
-      ...(categoryId ? { categoryId } : {}),
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      category: {
-        select: {
-          name: true,
+  const [articles, total] = await Promise.all([
+    prisma.news_article.findMany({
+      where: {
+        published: true,
+        ...(categoryId ? { categoryId } : {}),
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        category: {
+          select: {
+            name: true,
+          },
         },
       },
-    },
-    take: limit,
-    skip: (page - 1) * limit,
-  })
+      take: limit,
+      skip,
+    }),
+    prisma.news_article.count({
+      where: {
+        published: true,
+        ...(categoryId ? { categoryId } : {}),
+      },
+    }),
+  ])
 
-  const processedArticles = articles.map((article: TrendingArticle) => ({
+  const processedArticles = articles.map((article) => ({
     ...article,
     imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
     thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,
   }))
 
-  const total = await prisma.news_article.count({
-    where: {
-      published: true,
-      ...(categoryId ? { categoryId } : {}),
-    },
-  })
-
   return NextResponse.json({
     articles: processedArticles,
-    totalPages: Math.ceil(total / limit),
-    currentPage: page,
+    hasMore: skip + articles.length < total,
   })
 }
