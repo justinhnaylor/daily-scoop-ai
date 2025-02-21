@@ -93,11 +93,27 @@ function generateRequestSignature(timestamp: string, frequency: string) {
 
 function isAuthorized(request: Request) {
   try {
+    // Check if it's a Vercel Cron request
+    const isCronRequest = request.headers.get("x-vercel-cron") === "1"
+    if (isCronRequest) {
+      console.log("Authorized Vercel cron request")
+      return true
+    }
+
+    // For non-cron requests, continue with existing auth logic
     const authHeader = request.headers.get("authorization")
     const timestamp = request.headers.get("x-timestamp")
     const signature = request.headers.get("x-signature")
     const { searchParams } = new URL(request.url)
     const frequency = searchParams.get("frequency") || ""
+
+    console.log("Auth Debug:", {
+      isCron: isCronRequest,
+      authHeader: authHeader?.substring(0, 20) + "...",
+      timestamp,
+      signature: signature?.substring(0, 20) + "...",
+      frequency,
+    })
 
     // Basic validation
     if (!authHeader || !timestamp || !signature) {

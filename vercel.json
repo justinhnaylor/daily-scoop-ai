@@ -2,21 +2,11 @@
   "crons": [
     {
       "path": "/api/newsletter/send?frequency=daily",
-      "schedule": "0 16 * * *",
-      "headers": {
-        "Authorization": "Bearer @newsletter-api-key",
-        "X-Timestamp": "${Date.now()}",
-        "X-Signature": "@newsletter-signature"
-      }
+      "schedule": "0 16 * * *"
     },
     {
       "path": "/api/newsletter/send?frequency=weekly",
-      "schedule": "0 16 * * 1",
-      "headers": {
-        "Authorization": "Bearer @newsletter-api-key",
-        "X-Timestamp": "${Date.now()}",
-        "X-Signature": "@newsletter-signature"
-      }
+      "schedule": "0 16 * * 1"
     }
   ]
 }
