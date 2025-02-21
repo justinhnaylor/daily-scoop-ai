@@ -94,21 +94,19 @@ function generateRequestSignature(timestamp: string, frequency: string) {
 function isAuthorized(request: Request) {
   try {
     // Check if it's a Vercel Cron request
-    const isCronRequest = request.headers.get("x-vercel-cron") === "1"
-    if (isCronRequest) {
+    const authHeader = request.headers.get("authorization")
+    if (authHeader === `Bearer ${process.env.CRON_SECRET}`) {
       console.log("Authorized Vercel cron request")
       return true
     }
 
     // For non-cron requests, continue with existing auth logic
-    const authHeader = request.headers.get("authorization")
     const timestamp = request.headers.get("x-timestamp")
     const signature = request.headers.get("x-signature")
     const { searchParams } = new URL(request.url)
     const frequency = searchParams.get("frequency") || ""
 
     console.log("Auth Debug:", {
-      isCron: isCronRequest,
       authHeader: authHeader?.substring(0, 20) + "...",
       timestamp,
       signature: signature?.substring(0, 20) + "...",
@@ -220,33 +218,36 @@ function generateUnsubscribeUrl(email: string): string {
 }
 
 export async function POST(request: Request) {
-  // Get IP for rate limiting
-  const ip = request.headers.get("x-forwarded-for") || "127.0.0.1"
+  // Check if it's a Vercel cron request first
+  const authHeader = request.headers.get("authorization")
+  const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`
 
-  // Check rate limit
-  const { success, limit, reset, remaining } = await ratelimit.limit(ip)
+  // Only apply rate limiting for non-cron requests
+  if (!isVercelCron) {
+    const ip = request.headers.get("x-forwarded-for") || "127.0.0.1"
+    const { success, limit, reset, remaining } = await ratelimit.limit(ip)
 
-  if (!success) {
-    return NextResponse.json(
-      {
-        message: "Too many requests",
-        reset: reset,
-        remaining: remaining,
-      },
-      {
-        status: 429,
-        headers: {
-          "X-RateLimit-Limit": limit.toString(),
-          "X-RateLimit-Remaining": remaining.toString(),
-          "X-RateLimit-Reset": reset.toString(),
+    if (!success) {
+      return NextResponse.json(
+        {
+          message: "Too many requests",
+          reset: reset,
+          remaining: remaining,
         },
-      }
-    )
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        }
+      )
+    }
   }
 
   if (!isAuthorized(request)) {
     console.warn("Unauthorized newsletter send attempt", {
-      ip,
       timestamp: new Date().toISOString(),
     })
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
