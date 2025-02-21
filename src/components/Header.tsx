@@ -102,30 +102,16 @@ export default function Header() {
           >
             About
           </Link>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/newsletter"
-                  onClick={(e) => e.preventDefault()}
-                  className={cn(
-                    md
-                      ? "text-foreground/40 cursor-not-allowed"
-                      : "text-sm text-foreground/40 cursor-not-allowed",
-                    "transition-colors"
-                  )}
-                  aria-disabled="true"
-                >
-                  Newsletter
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent className="mr-2">
-                <p className={md ? "text-sm" : "text-[10px]"}>
-                  Feature coming soon
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Link
+            href="/newsletter"
+            className={cn(
+              md
+                ? "text-foreground/80 hover:text-foreground transition-colors"
+                : "text-sm text-foreground/80 hover:text-foreground transition-colors"
+            )}
+          >
+            Newsletter
+          </Link>
         </nav>
       </div>
       <Separator className="opacity-75" />

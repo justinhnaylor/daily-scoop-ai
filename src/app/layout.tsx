@@ -8,6 +8,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { ThemeProvider } from "@/components/theme-provider"
 import { customFont } from "@/lib/fonts"
+import { Toaster } from "@/components/ui/toaster"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,8 +21,36 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Daily Scoop AI",
-  description: "News And Analysis",
+  title: "Daily Scoop AI - Breaking News Without Bias",
+  description:
+    "Stay ahead with AI-powered news that cuts through the noise. Get unbiased, fact-driven stories tailored just for you.",
+  openGraph: {
+    title: "Daily Scoop AI - Breaking News Without Bias",
+    description:
+      "Stay ahead with AI-powered news that cuts through the noise. Get unbiased, fact-driven stories tailored just for you.",
+    url: "https://dailyscoopai.com",
+    siteName: "Daily Scoop AI",
+    images: [
+      {
+        url: "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Daily Scoop AI - Breaking News Without Bias",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Daily Scoop AI - Breaking News Without Bias",
+    description:
+      "Stay ahead with AI-powered news that cuts through the noise. Get unbiased, fact-driven stories tailored just for you.",
+    images: [
+      "https://dymrplcuovidgyepquba.supabase.co/storage/v1/object/public/images//og-image.jpg",
+    ],
+    creator: "@dailyscoopai",
+  },
   icons: {
     icon: [
       {
@@ -97,6 +126,7 @@ export default function RootLayout({
           </ThemeProvider>
           <Analytics />
           <SpeedInsights />
+          <Toaster />
         </QueryProvider>
       </body>
     </html>

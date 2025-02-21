@@ -3,12 +3,6 @@
 import Link from "next/link"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 
 export default function Footer() {
   const { md, sm } = useMediaQuery()
@@ -77,23 +71,15 @@ export default function Footer() {
                 md ? "text-base" : sm ? "text-sm" : "text-xs"
               )}
             >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span
-                      className={cn(
-                        "cursor-not-allowed opacity-70",
-                        md ? "text-base" : sm ? "text-sm" : "text-xs"
-                      )}
-                    >
-                      Sign up
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Feature coming soon</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>{" "}
+              <Link
+                href="/newsletter"
+                className={cn(
+                  "text-foreground/70 hover:text-foreground transition-colors",
+                  md ? "text-base" : sm ? "text-sm" : "text-xs"
+                )}
+              >
+                Sign up
+              </Link>{" "}
               for our newsletter to receive daily news updates and analysis.
             </p>
           </div>

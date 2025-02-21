@@ -256,6 +256,15 @@ export default function ArticleComponent({
           <div className="prose prose-lg text-foreground/90 max-w-none">
             {formatArticleBody(article.body)}
           </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            This article was created using AI.{" "}
+            <Link
+              href="/about"
+              className="font-bold underline text-[10px] text-primary hover:underline"
+            >
+              Learn more
+            </Link>
+          </p>
         </div>
 
         <RelatedArticles articles={relatedArticles} />

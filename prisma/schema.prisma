@@ -40,10 +40,37 @@ model news_article {
   updatedAt  DateTime   @updatedAt
   published  Boolean    @default(false)
   views      Int        @default(0)
+  daily_newsletter daily_newsletter?
 }
 
 model category {
   id       Int           @id @default(autoincrement())
   name     String        @unique
   articles news_article[]
+}
+
+model daily_greeting {
+  id              Int      @id @default(autoincrement())
+  message         String      @db.Text
+}
+
+model newsletter_subscriber {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  firstName     String
+  frequency     String    // "daily" or "weekly"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastEmailSent DateTime?
+  active        Boolean   @default(true)
+}
+
+model daily_newsletter {
+  id              String      @id @default(uuid())
+  newsArticleId   String      @unique
+  newsArticle     news_article @relation(fields: [newsArticleId], references: [id])
+  titleText       String      @db.Text
+  previewText     String      @db.Text
+  createdAt       DateTime    @default(now())
+  issue           Int         @default(autoincrement())
 }
