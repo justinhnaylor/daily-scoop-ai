@@ -14,49 +14,72 @@ export default function RevalidationListener({
   const { permission, requestPermission, sendNotification } = useNotifications()
 
   useEffect(() => {
+    if (typeof window === "undefined") return
+
     if (permission === "default") {
       requestPermission()
     }
   }, [permission, requestPermission])
 
   useEffect(() => {
-    const eventSource = new EventSource("/api/revalidate/listen")
-    let documentHidden = document.hidden
+    if (typeof window === "undefined") return
 
-    const handleVisibilityChange = () => {
+    let eventSource: EventSource | null = null
+    let documentHidden = false
+    let visibilityHandler: ((event: Event) => void) | null = null
+
+    try {
+      eventSource = new EventSource("/api/revalidate/listen")
       documentHidden = document.hidden
-      if (!document.hidden) {
-        FaviconManager.removeNotificationDot()
+
+      visibilityHandler = () => {
+        documentHidden = document.hidden
+        if (!document.hidden) {
+          FaviconManager.removeNotificationDot()
+        }
       }
-    }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange)
+      document.addEventListener("visibilitychange", visibilityHandler)
 
-    eventSource.onmessage = async (event) => {
-      // Force refetch all queries
-      await queryClient.refetchQueries({
-        type: "all",
-        stale: true,
-        exact: false,
-      })
+      eventSource.onmessage = async (event) => {
+        try {
+          // Force refetch all queries
+          await queryClient.refetchQueries({
+            type: "all",
+            stale: true,
+            exact: false,
+          })
 
-      // Only show notifications for new content
-      if (event.data === "new-content" && documentHidden) {
-        sendNotification("New Content Available", {
-          body: "New articles have been published!",
-          icon: "/favicon.ico",
-        })
-        FaviconManager.addNotificationDot()
+          // Only show notifications for new content
+          if (event.data === "new-content" && documentHidden) {
+            sendNotification("New Content Available", {
+              body: "New articles have been published!",
+              icon: "/favicon.ico",
+            })
+            FaviconManager.addNotificationDot()
+          }
+        } catch (error) {
+          console.error("Error handling message:", error)
+        }
       }
-    }
 
-    eventSource.onerror = (error) => {
-      console.error("EventSource error:", error)
+      eventSource.onerror = (error) => {
+        console.error("EventSource error:", error)
+        if (eventSource) {
+          eventSource.close()
+        }
+      }
+    } catch (error) {
+      console.error("Error setting up EventSource:", error)
     }
 
     return () => {
-      eventSource.close()
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      if (eventSource) {
+        eventSource.close()
+      }
+      if (typeof document !== "undefined" && visibilityHandler) {
+        document.removeEventListener("visibilitychange", visibilityHandler)
+      }
     }
   }, [queryClient, sendNotification])
 

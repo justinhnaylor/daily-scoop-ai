@@ -123,13 +123,23 @@ export default function RootLayout({
         >
           <ErrorBoundary>
             <QueryProvider>
-              <RevalidationListener>
-                <Header />
-                {children}
-                <Footer />
-                <Toaster />
-                <NewsletterToast />
-              </RevalidationListener>
+              {typeof window !== "undefined" ? (
+                <RevalidationListener>
+                  <Header />
+                  {children}
+                  <Footer />
+                  <Toaster />
+                  <NewsletterToast />
+                </RevalidationListener>
+              ) : (
+                <>
+                  <Header />
+                  {children}
+                  <Footer />
+                  <Toaster />
+                  <NewsletterToast />
+                </>
+              )}
             </QueryProvider>
           </ErrorBoundary>
         </ThemeProvider>
