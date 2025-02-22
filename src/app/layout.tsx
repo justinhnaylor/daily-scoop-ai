@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: "Daily Scoop AI - Breaking News Without Bias",
     description:
       "Stay ahead with AI-powered news that cuts through the noise. Get unbiased, fact-driven stories tailored just for you.",
-    url: "https://dailyscoopai.com",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
     siteName: "Daily Scoop AI",
     images: [
       {
