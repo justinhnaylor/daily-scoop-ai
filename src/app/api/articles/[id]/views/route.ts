@@ -5,9 +5,9 @@ import prisma from "../../../../../../lib/prisma"
 import { rateLimit } from "@/lib/rateLimit"
 
 // Configuration
-const RATE_LIMIT = 5 // views per window
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000 // 1 hour in milliseconds
-const VIEW_COOKIE_EXPIRY = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+const RATE_LIMIT = 1
+const RATE_LIMIT_WINDOW = 4 * 60 * 60 * 1000
+const VIEW_COOKIE_EXPIRY = 4 * 60 * 60 * 1000
 
 export async function POST(request: Request) {
   try {

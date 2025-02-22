@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils"
 
 export default function SkeletonStoryList() {
   const { lg, md, sm, xs } = useMediaQuery()
-  console.log("Breakpoints:", { lg, md, sm, xs })
 
   return (
     <div className="grid gap-6 mt-6">

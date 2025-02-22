@@ -9,6 +9,8 @@ import Footer from "@/components/Footer"
 import { ThemeProvider } from "@/components/theme-provider"
 import { customFont } from "@/lib/fonts"
 import { Toaster } from "@/components/ui/toaster"
+import NewsletterToast from "@/components/NewsletterToast"
+import { cn } from "@/lib/utils"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -79,9 +81,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -111,23 +113,29 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${customFont.variable} antialiased min-h-screen flex flex-col`}
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          geistSans.variable,
+          geistMono.variable,
+          customFont.variable
+        )}
       >
-        <QueryProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
             <Header />
-            <main className="flex-1">{children}</main>
+            {children}
             <Footer />
-          </ThemeProvider>
-          <Analytics />
-          <SpeedInsights />
-          <Toaster />
-        </QueryProvider>
+            <Toaster />
+            <NewsletterToast />
+            <Analytics />
+            <SpeedInsights />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

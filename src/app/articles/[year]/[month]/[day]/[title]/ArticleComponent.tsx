@@ -189,16 +189,18 @@ export default function ArticleComponent({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <nav className="max-w-4xl mx-auto px-4 py-4 text-sm">
-        <Link href="/">Home</Link> {" / "}
-        {article.category && (
-          <>
-            <Link href={`/categories/${article.categoryId}`}>
-              {article.category.name}
-            </Link>
-            {" / "}
-          </>
-        )}
-        <span>{article.title}</span>
+        <div className="flex flex-wrap items-center gap-1">
+          <Link href="/">Home</Link> {" / "}
+          {article.category && (
+            <>
+              <Link href={`/categories/${article.categoryId}`}>
+                {article.category.name}
+              </Link>
+              {" / "}
+            </>
+          )}
+          <span className="break-all">{article.title}</span>
+        </div>
       </nav>
       <article
         className="max-w-4xl mx-auto"
@@ -206,7 +208,7 @@ export default function ArticleComponent({
         itemType="https://schema.org/Article"
       >
         <div className="mb-8">
-          <div className="relative w-full h-[400px]">
+          <div className="relative w-full h-[300px] md:h-[400px]">
             <Image
               src={imageUrl || defaultBanner || ""}
               alt={article.title}
@@ -228,7 +230,9 @@ export default function ArticleComponent({
         </div>
 
         <div className="px-4">
-          <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold mb-4">
+            {article.title}
+          </h1>
 
           {article.audioUrl && (
             <div className="my-6 max-w-2xl">
@@ -236,7 +240,7 @@ export default function ArticleComponent({
             </div>
           )}
 
-          <div className="flex items-center gap-6 text-sm text-foreground/60 mb-8">
+          <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-foreground/60 mb-8">
             {article.category && (
               <span className="bg-foreground/10 px-3 py-1.5 rounded-full">
                 {article.category.name}
@@ -253,7 +257,7 @@ export default function ArticleComponent({
             </div>
           </div>
 
-          <div className="prose prose-lg text-foreground/90 max-w-none">
+          <div className="prose prose-lg md:prose-xl text-foreground/90 max-w-none">
             {formatArticleBody(article.body)}
           </div>
           <p className="text-[10px] text-muted-foreground mt-2">

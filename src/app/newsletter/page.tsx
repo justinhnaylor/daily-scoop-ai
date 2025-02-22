@@ -24,6 +24,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -41,6 +42,7 @@ export default function NewsletterPage() {
   const { md, sm } = useMediaQuery()
   const router = useRouter()
   const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +54,9 @@ export default function NewsletterPage() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (isLoading) return
+
+    setIsLoading(true)
     try {
       const response = await fetch("/api/newsletter/subscribe", {
         method: "POST",
@@ -67,22 +72,22 @@ export default function NewsletterPage() {
         throw new Error(data.message || "Failed to subscribe")
       }
 
-      // Show success toast
       toast({
         title: "Successfully subscribed! 🎉",
         description: `You'll receive the ${values.frequency} newsletter at ${values.email}`,
       })
 
-      // Redirect to home page
+      localStorage.setItem("newsletterToastDismissed", "true")
       router.push("/")
     } catch (error) {
-      // Show error toast
       toast({
         variant: "destructive",
         title: "Subscription failed",
         description:
           error instanceof Error ? error.message : "Something went wrong",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -90,8 +95,8 @@ export default function NewsletterPage() {
     <div className="container max-w-2xl mx-auto py-12 px-4">
       <h1
         className={cn(
-          "font-bold mb-2 whitespace-nowrap",
-          md ? "text-3xl" : sm ? "text-2xl" : "text-xl text-center"
+          "font-bold mb-2 text-left whitespace-nowrap",
+          md ? "text-3xl" : sm ? "text-2xl" : "text-lg text-center"
         )}
       >
         Daily Headlines Without the Extra Fluff
@@ -99,7 +104,7 @@ export default function NewsletterPage() {
       <p
         className={cn(
           "mb-8 text-foreground/60",
-          md ? "text-sm" : sm ? "text-xs" : "text-[10px]"
+          md ? "text-sm" : sm ? "text-xs text-left" : "text-[10px] text-center"
         )}
       >
         Our Newsletter Emails Are Like a Fine Wine...But Free and More Frequent.
@@ -148,10 +153,7 @@ export default function NewsletterPage() {
                     placeholder="john@example.com"
                     type="email"
                     {...field}
-                    className={cn(
-                      md ? "text-base" : sm ? "text-sm" : "text-xs",
-                      "h-8 md:h-10"
-                    )}
+                    className={cn(md ? "text-lg" : "text-base", "h-8 md:h-10")}
                   />
                 </FormControl>
                 <FormMessage className={cn(md ? "text-sm" : "text-xs")} />
@@ -207,12 +209,13 @@ export default function NewsletterPage() {
           />
           <Button
             type="submit"
+            disabled={isLoading}
             className={cn(
               md ? "text-base" : sm ? "text-sm" : "text-xs",
               "h-8 md:h-10"
             )}
           >
-            Subscribe
+            {isLoading ? "Subscribing..." : "Subscribe"}
           </Button>
         </form>
       </Form>
