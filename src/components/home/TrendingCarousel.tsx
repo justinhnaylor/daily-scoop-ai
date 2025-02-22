@@ -100,7 +100,7 @@ export default function TrendingCarousel({
                   <h2 className="text-white text-xl sm:text-2xl lg:text-3xl font-bold line-clamp-3 mb-4">
                     {story.title}
                   </h2>
-                  <div className="flex items-center text-white/90 text-sm sm:text-base">
+                  <div className="flex items-center text-white/90 text-sm sm:text-base mb-4 md:mb-0">
                     <EyeIcon className="h-5 w-5 mr-2" />
                     <span className="font-medium">
                       {story.views.toLocaleString()} views

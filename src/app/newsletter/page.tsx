@@ -128,10 +128,7 @@ export default function NewsletterPage() {
                   <Input
                     placeholder="John"
                     {...field}
-                    className={cn(
-                      md ? "text-base" : sm ? "text-sm" : "text-xs",
-                      "h-8 md:h-10"
-                    )}
+                    className={cn(md ? "text-lg" : "text-base", "h-8 md:h-10")}
                   />
                 </FormControl>
                 <FormMessage className={cn(md ? "text-sm" : "text-xs")} />
