@@ -65,7 +65,7 @@ export default function TrendingCarousel({
   return (
     <div className="relative overflow-hidden h-[300px] sm:h-[400px] w-full group">
       <div
-        className="flex h-full transition-transform duration-500 ease-in-out"
+        className="flex h-full transition-transform duration-700 ease-in-out"
         style={{
           transform: `translateX(-${currentIndex * 100}%)`,
         }}
@@ -82,7 +82,7 @@ export default function TrendingCarousel({
               href={`/articles/${story?.createdAt.getFullYear()}/${
                 story?.createdAt.getMonth() + 1
               }/${story?.createdAt.getDate()}/${story?.urlTitle}`}
-              className="min-w-full h-full relative"
+              className="min-w-full h-full relative group/item"
             >
               {imageUrl && (
                 <Image
@@ -90,15 +90,30 @@ export default function TrendingCarousel({
                   alt={story?.title}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                   fill
-                  className="object-cover"
+                  className="object-cover transition-all duration-500 brightness-[0.9] sm:brightness-100"
+                  priority
                   draggable={false}
                 />
               )}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 p-6">
-                <h2 className="text-white text-2xl font-bold">{story.title}</h2>
-                <div className="flex items-center text-white/80 mt-2">
-                  <EyeIcon className="h-5 w-5 mr-2" />
-                  <span>{story.views} views</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent">
+                <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                  <h2 className="text-white text-xl sm:text-2xl lg:text-3xl font-bold line-clamp-3 mb-4">
+                    {story.title}
+                  </h2>
+                  <div className="flex items-center text-white/90 text-sm sm:text-base">
+                    <EyeIcon className="h-5 w-5 mr-2" />
+                    <span className="font-medium">
+                      {story.views.toLocaleString()} views
+                    </span>
+                    <span className="mx-3">•</span>
+                    <time className="text-white/90">
+                      {new Date(story.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </time>
+                  </div>
                 </div>
               </div>
             </Link>
@@ -106,22 +121,20 @@ export default function TrendingCarousel({
         })}
       </div>
 
-      <div
+      <button
         onClick={handlePrevious}
-        className="absolute left-0 top-0 h-full w-[100px] bg-gradient-to-r from-black/0 
-        hover:opacity-100 opacity-0 transition-opacity cursor-pointer hover:from-black/20"
+        className="absolute left-0 top-0 h-full w-[15%] flex items-center justify-start px-4 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        aria-label="Previous slide"
       >
-        <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-transparent hover:bg-black/0 text-white/30 p-2 rounded-full"
-          aria-label="Previous slide"
-        >
+        <div className="p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-8 h-8"
+            strokeWidth={2.5}
+            stroke="white"
+            className="w-6 h-6 sm:w-8 sm:h-8"
           >
             <path
               strokeLinecap="round"
@@ -129,25 +142,23 @@ export default function TrendingCarousel({
               d="M15.75 19.5L8.25 12l7.5-7.5"
             />
           </svg>
-        </button>
-      </div>
+        </div>
+      </button>
 
-      <div
+      <button
         onClick={handleNext}
-        className="absolute right-0 top-0 h-full w-[100px] bg-gradient-to-l from-black/0 
-        hover:opacity-100 opacity-0 transition-opacity cursor-pointer hover:from-black/20"
+        className="absolute right-0 top-0 h-full w-[15%] flex items-center justify-end px-4
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        aria-label="Next slide"
       >
-        <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent hover:bg-black/0 text-white/30 p-2 rounded-full"
-          aria-label="Next slide"
-        >
+        <div className="p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-8 h-8"
+            strokeWidth={2.5}
+            stroke="white"
+            className="w-6 h-6 sm:w-8 sm:h-8"
           >
             <path
               strokeLinecap="round"
@@ -155,21 +166,24 @@ export default function TrendingCarousel({
               d="M8.25 4.5l7.5 7.5-7.5 7.5"
             />
           </svg>
-        </button>
-      </div>
+        </div>
+      </button>
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
         {stories.map((_, index) => (
           <button
             key={index}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex ? "bg-white w-4" : "bg-white/50"
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              index === currentIndex
+                ? "bg-white w-8"
+                : "bg-white/50 w-4 hover:bg-white/70"
             }`}
             onClick={() => {
               setCurrentIndex(index)
               setIsPaused(true)
               setTimeout(() => setIsPaused(false), 1000)
             }}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>

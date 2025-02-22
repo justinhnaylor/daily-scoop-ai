@@ -27,7 +27,6 @@ type Props = {
     month: string
     day: string
     title: string
-    urlTitle: string
   }>
 }
 
@@ -210,6 +209,7 @@ export default async function ArticlePage({ params }: Props) {
       : DEFAULT_THUMBNAIL.light,
     category: article.category || null,
     author: article.author || null,
+    shareUrl: `${validBaseUrl}/articles/${year}/${month}/${day}/${title}`,
   }
 
   const relatedArticles = await getRelatedArticles(processedArticle)

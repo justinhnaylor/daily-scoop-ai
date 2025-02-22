@@ -144,7 +144,7 @@ export default function NewsletterPage() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel
-                  className={cn(md ? "text-base" : sm ? "text-sm" : "text-xs")}
+                  className={cn(md ? "text-lg" : "text-base", "h-8 md:h-10")}
                 >
                   Email
                 </FormLabel>

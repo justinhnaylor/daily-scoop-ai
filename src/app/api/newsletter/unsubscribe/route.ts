@@ -164,8 +164,8 @@ export async function GET(request: Request) {
       await sendUnsubscribeEmail(email, subscriber.firstName || "")
     }
 
-    // Redirect to the unsubscribe confirmation page
-    return Response.redirect(
+    // Fix: Use NextResponse.redirect with full URL
+    return NextResponse.redirect(
       `${
         process.env.NEXT_PUBLIC_BASE_URL
       }/newsletter/unsubscribed?email=${encodeURIComponent(email)}`

@@ -10,12 +10,14 @@ import { useQueryClient } from "@tanstack/react-query"
 interface Props {
   categories: Category[]
   selectedCategory: number | null
+  optimisticCategory: number | null
   onOptimisticChange: (category: number | null) => void
 }
 
 export default function CategoryScroll({
   categories,
   selectedCategory,
+  optimisticCategory,
   onOptimisticChange,
 }: Props) {
   const router = useRouter()
@@ -26,14 +28,10 @@ export default function CategoryScroll({
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [optimisticCategory, setOptimisticCategory] = useState<number | null>(
-    selectedCategory
-  )
 
   const handleSelect = async (id: number | null) => {
     if (isDragging) return
 
-    setOptimisticCategory(id)
     onOptimisticChange(id)
 
     // Force the loading state immediately
@@ -105,10 +103,10 @@ export default function CategoryScroll({
             : md
             ? "text-sm px-3"
             : "flex-none text-xs px-2"
-        } py-1 rounded-full whitespace-nowrap ${
+        } py-1 rounded-full whitespace-nowrap transition-all ${
           optimisticCategory === null
-            ? "bg-background"
-            : "bg-foreground/10 hover:bg-foreground/20"
+            ? "bg-background shadow-sm"
+            : "bg-foreground/10 hover:bg-foreground/20 hover:shadow-sm"
         }`}
       >
         <TypographyP className="font-medium">All Stories</TypographyP>
@@ -123,10 +121,10 @@ export default function CategoryScroll({
               : md
               ? "text-sm px-3"
               : "flex-none text-xs px-2"
-          } px-2.5 py-1 rounded-full whitespace-nowrap ${
+          } px-2.5 py-1 rounded-full whitespace-nowrap transition-all ${
             optimisticCategory === category.id
-              ? "bg-background"
-              : "bg-foreground/10 hover:bg-foreground/20"
+              ? "bg-background shadow-sm"
+              : "bg-foreground/10 hover:bg-foreground/20 hover:shadow-sm"
           }`}
         >
           <TypographyP className="font-medium">{category.name}</TypographyP>

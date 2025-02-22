@@ -27,6 +27,7 @@ export default function ClientWrapper({
       <CategoryScroll
         categories={categories}
         selectedCategory={selectedCategory}
+        optimisticCategory={optimisticCategory}
         onOptimisticChange={setOptimisticCategory}
       />
       <StoryList

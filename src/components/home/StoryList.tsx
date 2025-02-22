@@ -121,51 +121,46 @@ export default function StoryList({
           >
             <div
               className={cn(
-                "relative flex-shrink-0",
+                "relative flex-shrink-0 rounded-lg overflow-hidden",
                 lg
-                  ? "w-40 h-40"
-                  : md
                   ? "w-32 h-32"
-                  : sm
+                  : md
                   ? "w-24 h-24"
-                  : "w-20 h-20"
+                  : sm
+                  ? "w-20 h-20"
+                  : "w-16 h-16"
               )}
             >
               <Image
                 src={imageUrl || defaultThumb || ""}
                 alt={story.title}
                 fill
-                sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, (max-width: 1280px) 128px, 160px"
-                className="object-cover rounded-lg"
+                sizes="(max-width: 768px) 64px, (max-width: 1024px) 80px, (max-width: 1280px) 96px, 128px"
+                className="object-cover"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h3
                 className={cn(
                   "font-semibold mb-2",
-                  lg ? "text-xl" : md ? "text-xl" : sm ? "text-lg" : "text-base"
+                  lg ? "text-lg" : md ? "text-base" : "text-sm"
                 )}
               >
                 {story.title}
               </h3>
               <div
                 className={cn(
-                  "flex items-center gap-4 text-foreground/60",
-                  lg ? "text-base" : md ? "text-sm" : "text-xs"
+                  "flex flex-wrap items-center gap-2 text-foreground/60",
+                  lg ? "text-sm" : "text-xs"
                 )}
               >
                 {story.category && (
-                  <span className="bg-foreground/10 px-2 py-1 rounded-full">
+                  <span className="bg-foreground/10 px-2 py-0.5 rounded-full truncate max-w-[150px]">
                     {story.category.name}
                   </span>
                 )}
                 <div className="flex items-center">
-                  <EyeIcon
-                    className={cn(
-                      "mr-1",
-                      lg ? "h-5 w-5" : md ? "h-4 w-4" : "h-3 w-3"
-                    )}
-                  />
+                  <EyeIcon className={cn("mr-1", lg ? "h-4 w-4" : "h-3 w-3")} />
                   {story.views}
                 </div>
                 <time>{createdAt.toLocaleDateString()}</time>

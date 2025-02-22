@@ -214,31 +214,39 @@ export default async function Home({ searchParams }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <section className="mb-12">
-          <h1 className="text-2xl font-bold mb-6">Trending Stories</h1>
-          <Suspense fallback={<SkeletonTrendingCarousel />}>
-            <TrendingCarousel stories={trendingStories} />
-          </Suspense>
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12">
+        <section>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 px-1 text-gray-900 dark:text-gray-50">
+            Trending Stories
+          </h1>
+          <div className="rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-800">
+            <Suspense fallback={<SkeletonTrendingCarousel />}>
+              <TrendingCarousel stories={trendingStories} />
+            </Suspense>
+          </div>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-6">Recent Stories</h2>
-          <Suspense
-            fallback={
-              <>
-                <SkeletonCategoryScroll />
-                <SkeletonStoryList />
-              </>
-            }
-          >
-            <ClientWrapper
-              categories={categories}
-              selectedCategory={categoryId}
-              initialStories={recentStoriesData.stories}
-              hasMore={recentStoriesData.hasMore}
-            />
-          </Suspense>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 px-1 text-gray-900 dark:text-gray-50">
+            Recent Stories
+          </h2>
+          <div className="rounded-xl overflow-hidden bg-white dark:bg-background shadow-lg p-4">
+            <Suspense
+              fallback={
+                <>
+                  <SkeletonCategoryScroll />
+                  <SkeletonStoryList />
+                </>
+              }
+            >
+              <ClientWrapper
+                categories={categories}
+                selectedCategory={categoryId}
+                initialStories={recentStoriesData.stories}
+                hasMore={recentStoriesData.hasMore}
+              />
+            </Suspense>
+          </div>
         </section>
       </main>
     </HydrationBoundary>

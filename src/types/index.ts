@@ -49,3 +49,17 @@ export interface PaginatedArticles {
   totalPages: number
   currentPage: number
 }
+
+export interface ProcessedArticle extends Article {
+  shareUrl: string
+  defaultImages: {
+    banner: {
+      light: string
+      dark: string
+    }
+    thumbnail: {
+      light: string
+      dark: string
+    }
+  }
+}

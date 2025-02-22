@@ -1,6 +1,6 @@
 "use client"
 
-import { Article } from "@/types"
+import { Article, ProcessedArticle } from "@/types"
 import Image from "next/image"
 import { EyeIcon, ClockIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
@@ -9,6 +9,7 @@ import { useEffect } from "react"
 import { useTrackView } from "@/hooks/useTrackView"
 import AudioPlayer from "@/components/AudioPlayer"
 import { useTheme } from "next-themes"
+import ShareButton from "./ShareButton"
 
 function estimateReadingTime(text: string): number {
   const wordsPerMinute = 200
@@ -137,7 +138,7 @@ export default function ArticleComponent({
   article,
   relatedArticles,
 }: {
-  article: Article
+  article: ProcessedArticle
   relatedArticles: Article[]
 }) {
   const { theme } = useTheme()
@@ -188,18 +189,24 @@ export default function ArticleComponent({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <nav className="max-w-4xl mx-auto px-4 py-4 text-sm">
+      <nav className="max-w-4xl mx-auto px-4 py-4 text-sm text-muted-foreground">
         <div className="flex flex-wrap items-center gap-1">
-          <Link href="/">Home</Link> {" / "}
+          <Link href="/" className="hover:text-foreground transition-colors">
+            Home
+          </Link>{" "}
+          {" / "}
           {article.category && (
             <>
-              <Link href={`/categories/${article.categoryId}`}>
+              <Link
+                href={`/categories/${article.categoryId}`}
+                className="hover:text-foreground transition-colors"
+              >
                 {article.category.name}
               </Link>
               {" / "}
             </>
           )}
-          <span className="break-all">{article.title}</span>
+          <span className="break-all text-foreground">{article.title}</span>
         </div>
       </nav>
       <article
@@ -208,21 +215,21 @@ export default function ArticleComponent({
         itemType="https://schema.org/Article"
       >
         <div className="mb-8">
-          <div className="relative w-full h-[300px] md:h-[400px]">
+          <div className="relative w-full aspect-[16/9] md:aspect-[21/9]">
             <Image
               src={imageUrl || defaultBanner || ""}
               alt={article.title}
               fill
               priority
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-              className="object-cover"
+              className="object-cover rounded-lg shadow-lg"
             />
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">
+          <p className="text-[10px] ml-4 text-muted-foreground mt-2 italic">
             Image and audio narration were created using AI.{" "}
             <Link
               href="/about"
-              className="font-bold underline text-[10px] text-primary hover:underline"
+              className="font-medium text-primary hover:underline transition-colors"
             >
               Learn more
             </Link>
@@ -230,41 +237,51 @@ export default function ArticleComponent({
         </div>
 
         <div className="px-4">
-          <h1 className="text-2xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
             {article.title}
           </h1>
 
+          {article.category && (
+            <div className="mb-4">
+              <span className="bg-muted/50 text-muted-foreground px-2.5 py-1 rounded-full text-xs sm:text-sm border border-muted/20 hover:bg-muted/70 transition-colors">
+                {article.category.name}
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm sm:text-base md:text-lg text-muted-foreground mb-8">
+            <div className="flex items-center gap-2">
+              <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              {article.views.toLocaleString()}
+            </div>
+            <time className="flex items-center">
+              {new Date(article.createdAt).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </time>
+            <div className="flex items-center gap-2">
+              <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              {estimateReadingTime(article.body)}m
+            </div>
+            <ShareButton url={article?.shareUrl} title={article?.title} />
+          </div>
+
           {article.audioUrl && (
-            <div className="my-6 max-w-2xl">
+            <div className="mb-8">
               <AudioPlayer audioUrl={article.audioUrl} />
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm text-foreground/60 mb-8">
-            {article.category && (
-              <span className="bg-foreground/10 px-3 py-1.5 rounded-full">
-                {article.category.name}
-              </span>
-            )}
-            <div className="flex items-center">
-              <EyeIcon className="h-4 w-4 mr-1" />
-              {article.views} views
-            </div>
-            <time>{new Date(article.createdAt).toLocaleDateString()}</time>
-            <div className="flex items-center">
-              <ClockIcon className="h-4 w-4 mr-1" />
-              {estimateReadingTime(article.body)} min read
-            </div>
-          </div>
-
-          <div className="prose prose-lg md:prose-xl text-foreground/90 max-w-none">
+          <div className="prose prose-lg md:prose-xl text-foreground/90 max-w-none prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground">
             {formatArticleBody(article.body)}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">
+          <p className="text-[10px] text-muted-foreground mt-6 italic">
             This article was created using AI.{" "}
             <Link
               href="/about"
-              className="font-bold underline text-[10px] text-primary hover:underline"
+              className="font-medium text-primary hover:underline transition-colors"
             >
               Learn more
             </Link>

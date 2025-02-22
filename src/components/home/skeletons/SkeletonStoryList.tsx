@@ -1,3 +1,5 @@
+"use client"
+
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
