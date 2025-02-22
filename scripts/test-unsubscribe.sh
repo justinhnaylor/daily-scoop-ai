@@ -4,7 +4,7 @@
 source .env
 
 # Set email (can be passed as argument)
-EMAIL=${1:-"test@example.com"}
+EMAIL=${1:-"justinhnaylor@gmail.com"}
 
 # Generate timestamp
 TIMESTAMP=$(date +%s000)

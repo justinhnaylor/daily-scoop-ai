@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import prisma from "../../../../../lib/prisma"
 import { z } from "zod"
+import * as SibApiV3Sdk from "@getbrevo/brevo"
+import crypto from "crypto"
 
 // Email validation schema with required firstName
 const subscribeSchema = z.object({
@@ -8,6 +10,80 @@ const subscribeSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   frequency: z.enum(["daily", "weekly"]).default("daily"),
 })
+
+// Initialize Brevo client
+const brevoClient = new SibApiV3Sdk.TransactionalEmailsApi()
+brevoClient.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY!
+)
+
+// Update template ID to match your template
+const WELCOME_TEMPLATE_ID = 3
+
+function validateTemplateId(templateId: number): boolean {
+  const validTemplateIds = [3] // Add all your valid template IDs here
+  return validTemplateIds.includes(templateId)
+}
+
+// Update function to include unsubscribe URL
+async function sendWelcomeEmail(
+  email: string,
+  firstName: string,
+  frequency: string
+) {
+  try {
+    if (!validateTemplateId(WELCOME_TEMPLATE_ID)) {
+      throw new Error(`Invalid template ID: ${WELCOME_TEMPLATE_ID}`)
+    }
+
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
+
+    // Generate unsubscribe URL
+    const timestamp = Date.now().toString()
+    const signature = crypto
+      .createHmac("sha256", process.env.NEWSLETTER_SECRET_KEY!)
+      .update(`${timestamp}:unsubscribe`)
+      .digest("hex")
+
+    const params = new URLSearchParams({
+      email,
+      timestamp,
+      signature,
+      key: process.env.NEWSLETTER_API_KEY!,
+    })
+
+    const unsubscribeUrl = `${
+      process.env.NEXT_PUBLIC_BASE_URL
+    }/api/newsletter/unsubscribe?${params.toString()}`
+
+    sendSmtpEmail.templateId = WELCOME_TEMPLATE_ID
+    sendSmtpEmail.params = {
+      name: firstName,
+      frequency: frequency === "daily" ? "day" : "week",
+      email: email,
+      unsubscribeUrl: unsubscribeUrl,
+    }
+
+    sendSmtpEmail.subject = "Who Told You You Could be so Smart? - Welcome!"
+    sendSmtpEmail.sender = {
+      name: "Daily Scoop AI",
+      email: "newsletter@dailyscoopai.com",
+    }
+    sendSmtpEmail.to = [
+      {
+        email: email,
+        name: firstName,
+      },
+    ]
+
+    const result = await brevoClient.sendTransacEmail(sendSmtpEmail)
+    return result
+  } catch (error) {
+    console.error("Error sending welcome email:", error)
+    throw error
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -73,7 +149,7 @@ export async function POST(request: Request) {
         )
       }
 
-      // If previously unsubscribed, reactivate
+      // If previously unsubscribed, reactivate and send welcome email
       await prisma.newsletter_subscriber.update({
         where: { email },
         data: {
@@ -83,6 +159,9 @@ export async function POST(request: Request) {
           updatedAt: new Date(),
         },
       })
+
+      // Send welcome email
+      await sendWelcomeEmail(email, firstName, frequency)
 
       return NextResponse.json({
         message: "Successfully resubscribed to newsletter",
@@ -99,6 +178,9 @@ export async function POST(request: Request) {
         active: true,
       },
     })
+
+    // Send welcome email
+    await sendWelcomeEmail(email, firstName, frequency)
 
     return NextResponse.json({
       message: "Successfully subscribed to newsletter",
