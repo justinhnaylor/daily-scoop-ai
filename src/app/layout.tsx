@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/toaster"
 import NewsletterToast from "@/components/NewsletterToast"
 import { cn } from "@/lib/utils"
 import RevalidationListener from "@/components/home/RevalidationListener"
+import ErrorBoundary from "@/components/ErrorBoundary"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -82,9 +83,11 @@ export default function RootLayout({
         <script>{`
           (function() {
             try {
-              const storedTheme = localStorage.getItem('theme')
-              if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
+              if (typeof window !== 'undefined' && window.localStorage) {
+                const storedTheme = localStorage.getItem('theme')
+                if (storedTheme === 'dark' || (!storedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark')
+                }
               }
             } catch (e) {
               console.error('Theme initialization failed:', e)
@@ -101,7 +104,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Daily Scoop AI" />
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
       </head>
       <body
@@ -118,15 +121,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
-            <RevalidationListener>
-              <Header />
-              {children}
-              <Footer />
-              <Toaster />
-              <NewsletterToast />
-            </RevalidationListener>
-          </QueryProvider>
+          <ErrorBoundary>
+            <QueryProvider>
+              <RevalidationListener>
+                <Header />
+                {children}
+                <Footer />
+                <Toaster />
+                <NewsletterToast />
+              </RevalidationListener>
+            </QueryProvider>
+          </ErrorBoundary>
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />
