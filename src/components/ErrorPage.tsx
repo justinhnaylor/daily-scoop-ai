@@ -34,7 +34,9 @@ export default function ErrorPage({ code, message }: ErrorPageProps) {
             </TypographyH1>
 
             <div className="space-y-4">
-              <div className="text-8xl font-bold text-primary/20">{code}</div>
+              <div className="md:text-8xl text-6xl font-bold text-primary/20">
+                {code}
+              </div>
               <TypographyP className="text-xl text-foreground/60">
                 {message}
               </TypographyP>

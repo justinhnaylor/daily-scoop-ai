@@ -164,11 +164,11 @@ export async function GET(request: Request) {
       await sendUnsubscribeEmail(email, subscriber.firstName || "")
     }
 
-    // Fix: Use NextResponse.redirect with full URL
     return NextResponse.redirect(
-      `${
-        process.env.NEXT_PUBLIC_BASE_URL
-      }/newsletter/unsubscribed?email=${encodeURIComponent(email)}`
+      new URL(
+        `/newsletter/unsubscribed?email=${encodeURIComponent(email)}`,
+        process.env.NEXT_PUBLIC_BASE_URL!
+      )
     )
   } catch (error) {
     console.error("Error unsubscribing:", error)

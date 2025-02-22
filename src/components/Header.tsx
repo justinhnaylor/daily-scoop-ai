@@ -19,7 +19,7 @@ import { Skeleton } from "./ui/skeleton"
 
 export default function Header() {
   const { md, sm } = useMediaQuery()
-  const imageSize = md ? 80 : sm ? 60 : 45
+  const imageSize = md ? 60 : sm ? 40 : 32
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -59,6 +59,7 @@ export default function Header() {
               alt="Daily Scoop AI Logo"
               width={imageSize}
               height={imageSize}
+              style={{ width: "auto", height: "auto", maxHeight: imageSize }}
               className="rounded-md"
             />
           )}
@@ -66,15 +67,15 @@ export default function Header() {
             <TypographyH4
               className={cn(
                 "tracking-tight transition-colors",
-                md ? "text-lg" : sm ? "text-base" : "text-sm"
+                md ? "text-lg" : sm ? "text-base" : "text-xs"
               )}
             >
-              Breaking News Without Bias
+              {sm ? "Breaking News Without Bias" : "News Without Bias"}
             </TypographyH4>
             <TypographyLead
               className={cn(
-                "tracking-tight text-muted-foreground",
-                md ? "text-sm" : sm ? "text-xs" : "text-[10px]"
+                "tracking-tight text-muted-foreground -mt-1",
+                md ? "text-[11px]" : sm ? "text-[9px]" : "text-[7px]"
               )}
             >
               Powered By AI

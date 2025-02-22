@@ -11,6 +11,7 @@ import { customFont } from "@/lib/fonts"
 import { Toaster } from "@/components/ui/toaster"
 import NewsletterToast from "@/components/NewsletterToast"
 import { cn } from "@/lib/utils"
+import RevalidationListener from "@/components/home/RevalidationListener"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,9 +24,14 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Daily Scoop AI - Breaking News Without Bias",
-  description:
-    "Stay ahead with AI-powered news that cuts through the noise. Get unbiased, fact-driven stories tailored just for you.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+  ),
+  title: {
+    default: "The Daily Scoop",
+    template: "%s | The Daily Scoop",
+  },
+  description: "Your trusted source for daily news and updates",
   openGraph: {
     title: "Daily Scoop AI - Breaking News Without Bias",
     description:
@@ -54,28 +60,7 @@ export const metadata: Metadata = {
     creator: "@dailyscoopai",
   },
   icons: {
-    icon: [
-      {
-        url: "/favicon.ico",
-      },
-      {
-        url: "/favicon-16x16.png",
-        sizes: "16x16",
-        type: "image/png",
-      },
-      {
-        url: "/favicon-32x32.png",
-        sizes: "32x32",
-        type: "image/png",
-      },
-    ],
-    apple: [
-      {
-        url: "/apple-touch-icon.png",
-        sizes: "180x180",
-        type: "image/png",
-      },
-    ],
+    icon: "/favicon.ico",
   },
 }
 
@@ -127,15 +112,17 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <Header />
-            {children}
-            <Footer />
-            <Toaster />
-            <NewsletterToast />
-            <Analytics />
-            <SpeedInsights />
+            <RevalidationListener>
+              <Header />
+              {children}
+              <Footer />
+              <Toaster />
+              <NewsletterToast />
+            </RevalidationListener>
           </QueryProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

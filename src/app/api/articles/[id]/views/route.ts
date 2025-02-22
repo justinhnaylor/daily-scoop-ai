@@ -62,7 +62,14 @@ export async function POST(request: Request) {
       console.error("Rate limit exceeded")
       return NextResponse.json(
         { error: "Rate limit exceeded" },
-        { status: 429 }
+        {
+          status: 429,
+          headers: {
+            "Retry-After": (RATE_LIMIT_WINDOW / 1000).toString(),
+            "X-RateLimit-Limit": RATE_LIMIT.toString(),
+            "X-RateLimit-Reset": (Date.now() + RATE_LIMIT_WINDOW).toString(),
+          },
+        }
       )
     }
 

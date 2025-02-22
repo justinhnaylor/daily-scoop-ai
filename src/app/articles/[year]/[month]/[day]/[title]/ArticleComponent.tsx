@@ -31,6 +31,7 @@ type TextSegment = {
 
 function parseTextSegments(text: string): TextSegment[] {
   const patterns: { regex: RegExp; type: TextSegment["type"] }[] = [
+    { regex: /\*\*(.*?)\*\*/g, type: "bold" },
     { regex: /\[bold\](.*?)\[\/bold\]/g, type: "bold" },
     { regex: /\[italic\](.*?)\[\/italic\]/g, type: "italic" },
     { regex: /\[bold-italic\](.*?)\[\/bold-italic\]/g, type: "bold-italic" },

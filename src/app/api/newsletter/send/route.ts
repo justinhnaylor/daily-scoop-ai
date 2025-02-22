@@ -152,6 +152,8 @@ function isAuthorized(request: Request) {
 }
 
 function convertMarkupToHtml(text: string): string {
+  text = text.replace(/\[p\]/g, "")
+
   const patterns = [
     { regex: /\[bold\](.*?)\[\/bold\]/g, html: "<strong>$1</strong>" },
     { regex: /\[italic\](.*?)\[\/italic\]/g, html: "<em>$1</em>" },

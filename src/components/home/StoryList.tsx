@@ -104,7 +104,7 @@ export default function StoryList({
 
   return (
     <div className="grid gap-6 mt-6">
-      {allStories.map((story) => {
+      {allStories.map((story, index) => {
         const defaultThumb =
           story.defaultImages?.thumbnail?.[theme as "light" | "dark"] ||
           story.defaultImages?.thumbnail?.light
@@ -135,6 +135,7 @@ export default function StoryList({
                 src={imageUrl || defaultThumb || ""}
                 alt={story.title}
                 fill
+                priority={index < 3}
                 sizes="(max-width: 768px) 64px, (max-width: 1024px) 80px, (max-width: 1280px) 96px, 128px"
                 className="object-cover"
               />

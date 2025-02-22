@@ -70,7 +70,7 @@ export default function TrendingCarousel({
           transform: `translateX(-${currentIndex * 100}%)`,
         }}
       >
-        {stories.map((story) => {
+        {stories.map((story, index) => {
           const defaultBanner =
             story.defaultImages?.banner?.[theme as "light" | "dark"] ||
             story.defaultImages?.banner?.light
@@ -91,7 +91,7 @@ export default function TrendingCarousel({
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                   fill
                   className="object-cover transition-all duration-500 brightness-[0.9] sm:brightness-100"
-                  priority
+                  priority={index === 0}
                   draggable={false}
                 />
               )}

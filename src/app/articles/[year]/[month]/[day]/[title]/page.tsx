@@ -152,7 +152,7 @@ const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL?.trim() || ""
 const validBaseUrl =
   rawBaseUrl.startsWith("http://") || rawBaseUrl.startsWith("https://")
     ? rawBaseUrl
-    : "http://localhost:3000"
+    : ""
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { year, month, day, title } = await params
