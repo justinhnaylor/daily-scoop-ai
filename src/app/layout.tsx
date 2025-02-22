@@ -23,10 +23,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
+// Helper function to ensure URL has protocol
+function getValidBaseUrl(url: string): string {
+  if (!url) return "http://localhost:3000"
+  if (url.startsWith("http://") || url.startsWith("https://")) return url
+  return `https://${url}`
+}
+
+const baseUrl = getValidBaseUrl(process.env.NEXT_PUBLIC_BASE_URL || "")
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-  ),
+  metadataBase: new URL(baseUrl),
   title: {
     default: "The Daily Scoop",
     template: "%s | The Daily Scoop",
@@ -36,7 +43,7 @@ export const metadata: Metadata = {
     title: "Daily Scoop AI - Breaking News Without Bias",
     description:
       "Stay ahead with AI-powered news that cuts through the noise. Get unbiased, fact-driven stories tailored just for you.",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    url: baseUrl,
     siteName: "Daily Scoop AI",
     images: [
       {
