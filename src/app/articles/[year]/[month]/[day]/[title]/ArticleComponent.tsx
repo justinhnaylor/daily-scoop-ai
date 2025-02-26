@@ -10,6 +10,8 @@ import { useTrackView } from "@/hooks/useTrackView"
 import AudioPlayer from "@/components/AudioPlayer"
 import { useTheme } from "next-themes"
 import ShareButton from "./ShareButton"
+import { useQuery } from "@tanstack/react-query"
+import ArticleSkeleton from "./ArticleSkeleton"
 
 function estimateReadingTime(text: string): number {
   const wordsPerMinute = 200
@@ -136,24 +138,53 @@ function formatArticleBody(body: string) {
 }
 
 export default function ArticleComponent({
-  article,
-  relatedArticles,
+  article: initialArticle,
+  relatedArticles: initialRelatedArticles,
+  articleKey,
 }: {
-  article: ProcessedArticle
-  relatedArticles: Article[]
+  article?: ProcessedArticle
+  relatedArticles?: Article[]
+  articleKey: string
 }) {
   const { theme } = useTheme()
   const { mutate: trackView } = useTrackView()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["article", articleKey],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/article-details?key=${encodeURIComponent(articleKey)}`
+      )
+      if (!res.ok) throw new Error("Failed to fetch article")
+      return res.json()
+    },
+    initialData:
+      initialArticle && initialRelatedArticles
+        ? { article: initialArticle, relatedArticles: initialRelatedArticles }
+        : undefined,
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const article = data?.article
+  const relatedArticles = data?.relatedArticles || []
+
+  useEffect(() => {
+    if (article?.id) {
+      trackView(article.id)
+    }
+  }, [article?.id, trackView])
+
+  if (isLoading && !article) {
+    return <ArticleSkeleton />
+  }
+
+  if (!article) return null
 
   const defaultBanner =
     article.defaultImages?.banner?.[theme as "light" | "dark"] ||
     article.defaultImages?.banner?.light
 
   const imageUrl = article.useImage ? article.imageUrl : defaultBanner
-
-  useEffect(() => {
-    trackView(article.id)
-  }, [article.id, trackView])
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -181,8 +212,6 @@ export default function ArticleComponent({
       },
     ],
   }
-
-  if (!article) return null
 
   return (
     <>
@@ -230,7 +259,7 @@ export default function ArticleComponent({
             Image and audio narration were created using AI.{" "}
             <Link
               href="/about"
-              className="font-medium text-primary hover:underline transition-colors"
+              className="font-medium text-blue-500 hover:underline transition-colors"
             >
               Learn more
             </Link>
@@ -282,7 +311,7 @@ export default function ArticleComponent({
             This article was created using AI.{" "}
             <Link
               href="/about"
-              className="font-medium text-primary hover:underline transition-colors"
+              className="font-medium text-blue-500 hover:underline transition-colors"
             >
               Learn more
             </Link>

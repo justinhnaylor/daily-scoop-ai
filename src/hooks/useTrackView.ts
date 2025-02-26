@@ -1,21 +1,28 @@
 import { useMutation } from "@tanstack/react-query"
 
+// Track which articles we've already attempted to track views for in this session
+const viewedArticleIds = new Set<string>()
+
 export function useTrackView() {
   return useMutation({
     mutationFn: async (articleId: string) => {
+      if (viewedArticleIds.has(articleId)) {
+        return null
+      }
+
+      viewedArticleIds.add(articleId)
+
       const response = await fetch(`/api/articles/${articleId}/views`, {
         method: "POST",
       })
 
       if (response.status === 429) {
-        // Rate limit exceeded - silently fail
         return null
       }
 
       const data = await response.json()
 
       if (data.error === "Already viewed") {
-        // Article already viewed - silently succeed
         return null
       }
 
@@ -25,7 +32,6 @@ export function useTrackView() {
 
       return data
     },
-    // Don't retry on rate limit or already viewed
     retry: (failureCount, error) => {
       if (
         error instanceof Error &&

@@ -11,6 +11,19 @@ import SkeletonTrendingCarousel from "@/components/home/skeletons/SkeletonTrendi
 import SkeletonCategoryScroll from "@/components/home/skeletons/SkeletonCategoryScroll"
 import SkeletonStoryList from "@/components/home/skeletons/SkeletonStoryList"
 import ClientWrapper from "@/components/home/ClientWrapper"
+import { unstable_cache } from "next/cache"
+
+type StoryResult = {
+  id: string
+  title: string
+  imageUrl: string | null
+  thumbnailUrl: string | null
+  useImage: boolean
+  views: number
+  published: boolean
+  createdAt: Date
+  urlTitle: string
+}
 
 export async function generateMetadata() {
   return {
@@ -43,6 +56,17 @@ export async function generateMetadata() {
     },
   }
 }
+
+const getCachedTrendingStories = unstable_cache(
+  async (theme: string) => {
+    return await getTrendingStories(theme)
+  },
+  ["trending-stories"],
+  {
+    tags: ["trending-stories"],
+    revalidate: 3600,
+  }
+)
 
 async function getTrendingStories(theme: string) {
   const sevenDaysAgo = new Date()
@@ -81,18 +105,6 @@ async function getTrendingStories(theme: string) {
     },
   })
 
-  type StoryResult = {
-    id: string
-    title: string
-    imageUrl: string | null
-    thumbnailUrl: string | null
-    useImage: boolean
-    views: number
-    published: boolean
-    createdAt: Date
-    urlTitle: string
-  }
-
   const processedStories = stories.map((story: StoryResult) => ({
     ...story,
     defaultImages: {
@@ -109,6 +121,22 @@ async function getTrendingStories(theme: string) {
 
   return processedStories
 }
+
+export const getCachedRecentStories = unstable_cache(
+  async (
+    categoryId: number | null,
+    theme: string,
+    page: number,
+    limit: number
+  ) => {
+    return await getRecentStories(categoryId, theme, page, limit)
+  },
+  ["recent-stories"],
+  {
+    tags: ["recent-stories"],
+    revalidate: 3600,
+  }
+)
 
 async function getRecentStories(
   categoryId: number | null = null,
@@ -208,8 +236,8 @@ export default async function Home({ searchParams }: Props) {
   })
 
   const [trendingStories, recentStoriesData] = await Promise.all([
-    getTrendingStories("light"),
-    getRecentStories(categoryId, "light", 1, 10),
+    getCachedTrendingStories("light"),
+    getCachedRecentStories(categoryId, "light", 1, 10),
   ])
 
   return (

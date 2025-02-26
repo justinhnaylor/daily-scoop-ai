@@ -23,7 +23,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl }) => {
   }
 
   return (
-    <div className="flex rounded-lg bg-card">
+    <div className="flex rounded-lg ">
       <button
         onClick={togglePlay}
         className="flex items-center justify-center w-0 h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"

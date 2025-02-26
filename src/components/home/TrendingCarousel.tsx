@@ -75,13 +75,14 @@ export default function TrendingCarousel({
             story.defaultImages?.banner?.[theme as "light" | "dark"] ||
             story.defaultImages?.banner?.light
           const imageUrl = story.useImage ? story.imageUrl : defaultBanner
+          const createdAtDate = new Date(story?.createdAt)
 
           return (
             <Link
               key={story?.id}
-              href={`/articles/${story?.createdAt.getFullYear()}/${
-                story?.createdAt.getMonth() + 1
-              }/${story?.createdAt.getDate()}/${story?.urlTitle}`}
+              href={`/articles/${createdAtDate.getFullYear()}/${
+                createdAtDate.getMonth() + 1
+              }/${createdAtDate.getDate()}/${story?.urlTitle}`}
               className="min-w-full h-full relative group/item"
             >
               {imageUrl && (

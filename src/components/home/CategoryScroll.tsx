@@ -43,7 +43,7 @@ export default function CategoryScroll({
       queryKey: ["articles", id],
       queryFn: async () => {
         const res = await fetch(
-          `/api/articles?${id ? `category=${id}&` : ""}page=1`
+          `/api/recent-stories?${id ? `category=${id}&` : ""}page=1`
         )
         return res.json()
       },

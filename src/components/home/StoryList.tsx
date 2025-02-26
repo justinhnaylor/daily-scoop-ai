@@ -12,6 +12,9 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
 import SkeletonStoryList from "./skeletons/SkeletonStoryList"
 import { TypographyH4, TypographyMuted } from "@/components/ui/typography"
+import { useRouter } from "next/navigation"
+import "nprogress/nprogress.css"
+import { navigationEvents } from "@/lib/navigationEvents"
 
 interface StoryListProps {
   initialStories: Article[]
@@ -29,34 +32,44 @@ export default function StoryList({
   const { theme } = useTheme()
   const { lg, md, sm } = useMediaQuery()
   const { ref, inView } = useInView()
+  const router = useRouter()
 
   const fetchStories = async ({ pageParam = 1 }) => {
-    const res = await fetch(
-      `/api/articles?${
-        categoryId ? `category=${categoryId}&` : ""
-      }page=${pageParam}&theme=${theme}`
-    )
-    return res.json()
+    try {
+      const res = await fetch(
+        `/api/recent-stories?${
+          categoryId ? `category=${categoryId}&` : ""
+        }page=${pageParam}&theme=${theme}`
+      )
+
+      if (!res.ok) {
+        throw new Error(`Error fetching stories: ${res.statusText}`)
+      }
+
+      const data = await res.json()
+      return data
+    } catch (error) {
+      console.error("Fetch error:", error)
+      return { stories: [], hasMore: false }
+    }
   }
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isFetching,
-  } = useInfiniteQuery({
-    queryKey: ["articles", categoryId],
-    queryFn: fetchStories,
-    initialPageParam: 1,
-    initialData: {
-      pages: [{ articles: initialStories, hasMore }],
-      pageParams: [1],
-    },
-    getNextPageParam: (lastPage, pages) =>
-      lastPage.hasMore ? pages.length + 1 : undefined,
-  })
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["articles", categoryId],
+      queryFn: fetchStories,
+      initialPageParam: 1,
+      initialData: {
+        pages: [{ stories: initialStories, hasMore }],
+        pageParams: [1],
+      },
+      getNextPageParam: (lastPage, pages) =>
+        lastPage.hasMore ? pages.length + 1 : undefined,
+      staleTime: 1000 * 60 * 5,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    })
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -64,13 +77,15 @@ export default function StoryList({
     }
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  const allStories = data?.pages.flatMap((page) => page.articles) ?? []
+  const allStories = data?.pages.flatMap((page) => page.stories) ?? []
 
-  if (optimisticCategory !== undefined && optimisticCategory !== categoryId) {
-    return <SkeletonStoryList />
+  const handleClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault()
+    navigationEvents.start()
+    router.push(href)
   }
 
-  if (isLoading || (isFetching && !isFetchingNextPage)) {
+  if (optimisticCategory !== undefined && optimisticCategory !== categoryId) {
     return <SkeletonStoryList />
   }
 
@@ -110,13 +125,15 @@ export default function StoryList({
           story.defaultImages?.thumbnail?.light
         const imageUrl = story.useImage ? story.thumbnailUrl : defaultThumb
         const createdAt = new Date(story.createdAt)
+        const href = `/articles/${createdAt.getFullYear()}/${
+          createdAt.getMonth() + 1
+        }/${createdAt.getDate()}/${story.urlTitle}`
 
         return (
           <Link
             key={story.id}
-            href={`/articles/${createdAt.getFullYear()}/${
-              createdAt.getMonth() + 1
-            }/${createdAt.getDate()}/${story.urlTitle}`}
+            href={href}
+            onClick={(e) => handleClick(e, href)}
             className="flex gap-4 items-start hover:bg-foreground/5 p-4 rounded-lg transition-colors"
           >
             <div

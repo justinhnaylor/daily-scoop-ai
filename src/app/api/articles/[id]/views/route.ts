@@ -5,9 +5,12 @@ import prisma from "../../../../../../lib/prisma"
 import { rateLimit } from "@/lib/rateLimit"
 
 // Configuration
-const RATE_LIMIT = 1
+const RATE_LIMIT = 5 // Increased from 1 to 5 for testing
 const RATE_LIMIT_WINDOW = 4 * 60 * 60 * 1000
 const VIEW_COOKIE_EXPIRY = 4 * 60 * 60 * 1000
+
+// Debug mode for development
+const DEBUG = process.env.NODE_ENV === "development"
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +33,8 @@ export async function POST(request: Request) {
     const ip = headersList.get("x-forwarded-for") || "unknown"
 
     // Check for existing view cookie for this article
-    if (cookieStore.get(`article-view-${id}`)) {
+    const existingCookie = cookieStore.get(`article-view-${id}`)
+    if (existingCookie) {
       return NextResponse.json(
         { error: "Already viewed", views: null },
         { status: 200 }
@@ -47,19 +51,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 })
     }
 
-    // Create rate‑limit identifiers
-    const ipIdentifier = `ip-${ip}`
-    const articleIdentifier = `article-${id}`
+    // Create combined rate limit identifier (IP + article ID)
     const combinedIdentifier = `${ip}-${id}`
 
-    // Check rate limits; await if asynchronous
-    const allowed = await rateLimit(
-      [ipIdentifier, articleIdentifier, combinedIdentifier],
-      RATE_LIMIT,
-      RATE_LIMIT_WINDOW
-    )
+    // For development, bypass rate limiting or use higher limits
+    let allowed = true
+    if (!DEBUG) {
+      allowed = await rateLimit(
+        [combinedIdentifier],
+        RATE_LIMIT,
+        RATE_LIMIT_WINDOW
+      )
+    }
+
     if (!allowed) {
-      console.error("Rate limit exceeded")
+      console.error(`Rate limit exceeded for ${combinedIdentifier}`)
       return NextResponse.json(
         { error: "Rate limit exceeded" },
         {

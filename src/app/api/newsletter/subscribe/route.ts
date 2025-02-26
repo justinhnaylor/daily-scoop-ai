@@ -87,9 +87,6 @@ async function sendWelcomeEmail(
 
 export async function POST(request: Request) {
   try {
-    // Add debug logging
-    console.log("Received request:", request.headers.get("content-type"))
-
     // Ensure we're getting JSON content
     if (!request.headers.get("content-type")?.includes("application/json")) {
       return NextResponse.json(
@@ -102,7 +99,6 @@ export async function POST(request: Request) {
     let body
     try {
       body = await request.json()
-      console.log("Parsed body:", body)
     } catch (e) {
       console.error("Error parsing JSON:", e)
       return NextResponse.json(

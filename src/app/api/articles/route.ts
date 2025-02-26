@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import prisma from "../../../../lib/prisma"
-
+import { Article } from "@/types"
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const categoryId = searchParams.get("category")
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     }),
   ])
 
-  const processedArticles = articles.map((article) => ({
+  const processedArticles = articles.map((article: Article) => ({
     ...article,
     imageUrl: article.useImage ? article.imageUrl : DEFAULT_BANNER,
     thumbnailUrl: article.useImage ? article.thumbnailUrl : DEFAULT_THUMBNAIL,

@@ -2,14 +2,15 @@ import prisma from "../../../../../../../lib/prisma"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import ArticleComponent from "./ArticleComponent"
+import { Article } from "@/types"
+import { Suspense } from "react"
+import ArticleSkeleton from "./ArticleSkeleton"
 
 import {
   HydrationBoundary,
   QueryClient,
   dehydrate,
 } from "@tanstack/react-query"
-
-import type { Article } from "@/types"
 
 const DEFAULT_BANNER = {
   light: "/daily-scoop-banner-light.webp",
@@ -36,10 +37,26 @@ export async function generateStaticParams() {
     where: { published: true },
     orderBy: { createdAt: "desc" },
     take: 100,
-    select: { id: true, title: true, createdAt: true, urlTitle: true },
+    select: {
+      id: true,
+      title: true,
+      urlTitle: true,
+      createdAt: true,
+      body: true,
+      audioUrl: true,
+      authorId: true,
+      categoryId: true,
+      updatedAt: true,
+      published: true,
+      imageUrl: true,
+      thumbnailUrl: true,
+      keywords: true,
+      useImage: true,
+      views: true,
+    },
   })
 
-  return articles.map((article) => {
+  return articles.map((article: Article) => {
     const date = new Date(article.createdAt)
     return {
       year: date.getFullYear().toString(),
@@ -87,14 +104,6 @@ async function getArticle(
     )
   )
 
-  console.log("Article search params:", {
-    urlTitle: title,
-    dateRange: {
-      from: startDate.toISOString(),
-      to: endDate.toISOString(),
-    },
-  })
-
   const article = await prisma.news_article.findFirst({
     where: {
       urlTitle: title,
@@ -108,13 +117,6 @@ async function getArticle(
       category: true,
       author: true,
     },
-  })
-
-  console.log("Article search result:", {
-    found: !!article,
-    articleDate: article?.createdAt?.toISOString(),
-    published: article?.published,
-    urlTitle: article?.urlTitle,
   })
 
   if (!article || !article.published) {
@@ -234,8 +236,10 @@ export default async function ArticlePage({ params }: Props) {
     },
   }
 
+  const articleKey = `${year}-${month}-${day}-${title}`
+
   await queryClient.prefetchQuery({
-    queryKey: ["article", `${year}-${month}-${day}-${title}`],
+    queryKey: ["article", articleKey],
     queryFn: () => ({ article: processedArticle, relatedArticles }),
   })
 
@@ -246,10 +250,13 @@ export default async function ArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <ArticleComponent
-          article={processedArticle}
-          relatedArticles={relatedArticles}
-        />
+        <Suspense fallback={<ArticleSkeleton />}>
+          <ArticleComponent
+            article={processedArticle}
+            relatedArticles={relatedArticles}
+            articleKey={articleKey}
+          />
+        </Suspense>
       </HydrationBoundary>
     </>
   )

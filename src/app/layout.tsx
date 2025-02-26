@@ -13,6 +13,7 @@ import NewsletterToast from "@/components/NewsletterToast"
 import { cn } from "@/lib/utils"
 import RevalidationListener from "@/components/home/RevalidationListener"
 import ErrorBoundary from "@/components/ErrorBoundary"
+import NavigationProgress from "@/components/NavigationProgress"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -115,6 +116,7 @@ export default function RootLayout({
           customFont.variable
         )}
       >
+        <NavigationProgress />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

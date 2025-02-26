@@ -15,42 +15,49 @@ export default function RelatedArticles({ articles }: { articles: Article[] }) {
     <section className="mt-12 border-t pt-8">
       <h2 className="text-2xl font-bold mb-6">Related Articles</h2>
       <div className="grid gap-6 md:grid-cols-3">
-        {articles.map((related: Article) => (
-          <Link
-            key={related?.id}
-            href={`/articles/${related?.createdAt.getFullYear()}/${
-              related?.createdAt.getMonth() + 1
-            }/${related?.createdAt.getDate()}/${related.urlTitle}`}
-            className="group"
-          >
-            <div className="relative w-full h-48 mb-4">
-              <Image
-                src={
-                  related.thumbnailUrl || related.imageUrl || DEFAULT_THUMBNAIL
-                }
-                alt={related.title}
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
-                className="object-cover rounded-lg group-hover:opacity-90 transition-opacity"
-              />
-            </div>
-            <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
-              {related.title}
-            </h3>
-            <div className="flex items-center gap-4 text-sm text-foreground/60">
-              {related.category && (
-                <span className="bg-foreground/10 px-2 py-1 rounded-full">
-                  {related.category.name}
-                </span>
-              )}
-              <div className="flex items-center">
-                <EyeIcon className="h-4 w-4 mr-1" />
-                {related.views} views
+        {articles.map((related: Article) => {
+          // Convert createdAt to a Date object if it's a string
+          const createdAtDate = new Date(related.createdAt)
+
+          return (
+            <Link
+              key={related?.id}
+              href={`/articles/${createdAtDate.getFullYear()}/${
+                createdAtDate.getMonth() + 1
+              }/${createdAtDate.getDate()}/${related.urlTitle}`}
+              className="group"
+            >
+              <div className="relative w-full h-48 mb-4">
+                <Image
+                  src={
+                    related.thumbnailUrl ||
+                    related.imageUrl ||
+                    DEFAULT_THUMBNAIL
+                  }
+                  alt={related.title}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
+                  className="object-cover rounded-lg group-hover:opacity-90 transition-opacity"
+                />
               </div>
-            </div>
-          </Link>
-        ))}
+              <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
+                {related.title}
+              </h3>
+              <div className="flex items-center gap-4 text-sm text-foreground/60">
+                {related.category && (
+                  <span className="bg-foreground/10 px-2 py-1 rounded-full">
+                    {related.category.name}
+                  </span>
+                )}
+                <div className="flex items-center">
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  {related.views} views
+                </div>
+              </div>
+            </Link>
+          )
+        })}
       </div>
     </section>
   )

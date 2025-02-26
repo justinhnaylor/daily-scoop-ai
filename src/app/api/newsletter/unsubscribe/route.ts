@@ -36,14 +36,12 @@ function isAuthorized(request: Request) {
 
     // Basic validation
     if (!timestamp || !signature || !providedApiKey) {
-      console.log("Failed basic validation - missing parameters")
       return false
     }
 
     // API key check
     const apiKey = process.env.NEWSLETTER_API_KEY
     if (providedApiKey !== apiKey) {
-      console.log("Failed API key validation")
       return false
     }
 
@@ -52,8 +50,6 @@ function isAuthorized(request: Request) {
     const currentTime = Date.now()
     const timeDiff = Math.abs(currentTime - requestTime)
     if (timeDiff > 24 * 60 * 60 * 1000) {
-      // 24 hours
-      console.log("Failed time validation")
       return false
     }
 
@@ -64,7 +60,6 @@ function isAuthorized(request: Request) {
       .digest("hex")
 
     if (signature !== expectedSignature) {
-      console.log("Failed signature validation")
       return false
     }
 

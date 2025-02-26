@@ -29,8 +29,6 @@ const TEMPLATE_IDS = {
 }
 
 function validateTemplateId(templateId: number): boolean {
-  console.log("Validating template ID:", templateId)
-
   const validTemplateIds = Object.values(TEMPLATE_IDS)
   const isValid = validTemplateIds.includes(templateId)
 
@@ -96,7 +94,6 @@ function isAuthorized(request: Request) {
     // Check if it's a Vercel Cron request
     const authHeader = request.headers.get("authorization")
     if (authHeader === `Bearer ${process.env.CRON_SECRET}`) {
-      console.log("Authorized Vercel cron request")
       return true
     }
 
@@ -106,16 +103,8 @@ function isAuthorized(request: Request) {
     const { searchParams } = new URL(request.url)
     const frequency = searchParams.get("frequency") || ""
 
-    console.log("Auth Debug:", {
-      authHeader: authHeader?.substring(0, 20) + "...",
-      timestamp,
-      signature: signature?.substring(0, 20) + "...",
-      frequency,
-    })
-
     // Basic validation
     if (!authHeader || !timestamp || !signature) {
-      console.log("Failed basic validation - missing headers")
       return false
     }
 
@@ -123,7 +112,6 @@ function isAuthorized(request: Request) {
     const apiKey = process.env.NEWSLETTER_API_KEY
     const providedApiKey = authHeader.replace("Bearer ", "")
     if (providedApiKey !== apiKey) {
-      console.log("Failed API key validation")
       return false
     }
 
@@ -132,18 +120,15 @@ function isAuthorized(request: Request) {
     const currentTime = Date.now()
     const timeDiff = Math.abs(currentTime - requestTime)
     if (timeDiff > 5 * 60 * 1000) {
-      console.log("Failed time validation")
       return false
     }
 
     // Signature validation
     const expectedSignature = generateRequestSignature(timestamp, frequency)
     if (signature !== expectedSignature) {
-      console.log("Failed signature validation")
       return false
     }
 
-    console.log("Authorization successful!")
     return true
   } catch (error) {
     console.error("Authorization error:", error)
@@ -302,8 +287,6 @@ export async function POST(request: Request) {
           subscriber.firstName || subscriber.email.split("@")[0]
         const greeting = await getRandomGreeting()
 
-        console.log("Selected greeting:", greeting)
-
         // Convert the article body to HTML first
         const articleHtml = convertMarkupToHtml(article.body)
         const excerpt = articleHtml.substring(0, 200) + "..."
@@ -316,13 +299,6 @@ export async function POST(request: Request) {
 
         // Construct the article URL with date components
         const articleUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${year}/${month}/${day}/${article.urlTitle}`
-
-        // Log what we're sending for debugging
-        console.log("Sending email with content:", {
-          originalText: article.body.substring(0, 200),
-          convertedHtml: excerpt,
-          articleUrl,
-        })
 
         // Get and validate template ID
         const templateId = TEMPLATE_IDS[frequency as keyof typeof TEMPLATE_IDS]
@@ -381,10 +357,6 @@ export async function POST(request: Request) {
         }
 
         const result = await brevoClient.sendTransacEmail(sendSmtpEmail)
-        console.log("Email sent successfully:", {
-          to: subscriber.email,
-          messageId: result.body.messageId,
-        })
 
         await prisma.newsletter_subscriber.update({
           where: { id: subscriber.id },
